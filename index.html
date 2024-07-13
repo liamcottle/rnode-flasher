@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <title>RNode Flasher</title>
+
+    <script src="./rnode.js"></script>
+    <script src="https://unpkg.com/vue@3"></script>
+
+</head>
+<body>
+
+<div id="app">
+    <button @click="connect">Connect</button>
+</div>
+
+<script>
+    Vue.createApp({
+        data() {
+            return {
+
+            };
+        },
+        mounted() {
+
+        },
+        methods: {
+            async connect() {
+
+                if(!navigator.serial){
+                    alert("Serial is not supported in this browser");
+                    return;
+                }
+
+                // ask user to select device
+                const serialPort = await navigator.serial.requestPort({
+                    filters: [],
+                });
+
+                await serialPort.open({
+                    baudRate: RNode.BAUD_RATE,
+                });
+
+                const rnode = RNode.fromSerialPort(serialPort);
+
+                if(!await rnode.detect()){
+                    console.log("device is not an rnode");
+                    return;
+                }
+
+                // dump node info
+                console.log({
+                    firmware_version: await rnode.getFirmwareVersion(),
+                    platform: await rnode.getPlatform(),
+                    mcu: await rnode.getMcu(),
+                    board: await rnode.getBoard(),
+                    device_hash: await rnode.getDeviceHash(),
+                    firmware_hash_target: await rnode.getTargetFirmwareHash(),
+                    firmware_hash: await rnode.getFirmwareHash(),
+                    // rom: await rnode.getRom(),
+                    frequency: await rnode.getFrequency(),
+                    bandwidth: await rnode.getBandwidth(),
+                    tx_power: await rnode.getTxPower(),
+                    spreading_factor: await rnode.getSpreadingFactor(),
+                    coding_rate: await rnode.getCodingRate(),
+                    radio_state: await rnode.getRadioState(),
+                    rx_stat: await rnode.getRxStat(),
+                    tx_stat: await rnode.getTxStat(),
+                    rssi_stat: await rnode.getRssiStat(),
+                });
+
+                // console.log(response.map(x => x.toString(16).padStart(2, '0')).join(''));
+
+            },
+        },
+    }).mount('#app');
+</script>
+
+</body>
+</html>
