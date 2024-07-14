@@ -707,6 +707,11 @@ class ROM {
             };
         }
 
+        // if checksum in eeprom does not match calculated checksum, it is not provisioned
+        if(details.checksum !== details.calculated_checksum){
+            details.is_provisioned = false;
+        }
+
         return details;
 
     }
