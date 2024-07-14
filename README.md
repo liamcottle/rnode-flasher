@@ -39,6 +39,36 @@ The following list of devices are supported:
 
 - RAK4631
 
+## What is needed to set up a new RNode?
+
+> Note: This is a technical overview of how the RNode device provisioning works.
+> Most of this is taken care of by the code base, and this section just makes it easier to understand what is going on.
+
+To set up a new RNode device, you will need to do a few things;
+
+- Obtain supported hardware, such as a RAK4631
+- Obtain an RNode firmware file
+- Put your device into DFU mode
+- Flash the firmware file
+- Provision the EEPROM
+
+Once the firmware is flashed to the device, you will need to provision the EEPROM;
+
+- Set firmware hash in eeprom
+- Collect device info
+  - `product`
+  - `model`
+  - `hardware_revision`
+  - `serial_number`
+  - `made` (unix timestamp of device creation)
+- Write device info to eeprom
+- Create an MD5 checksum of the device info
+- Write 16 byte device info checksum to eeprom
+- Sign device info checksum with signing key to use as signature
+- Write 128 byte signature to eeprom
+- Write `ROM.INFO_LOCK_BYTE` to `ROM.ADDR_INFO_LOCK` in eeprom
+- Read eeprom and validate checksums and signatures to ensure all is correct
+
 ## TODO
 
 - support configuring eeprom with device signatures and firmware hashes
