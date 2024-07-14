@@ -10,7 +10,7 @@ At this time, it does not support flashing bootloaders or softdevices.
 
 ## How does it work?
 
-I wanted something simple, for flashing firmware to a RAK4631 in a web browser.
+I wanted something simple, for flashing RNode firmware to a nRF52 RAK4631 in a web browser.
 
 So, I spent a bit of time working through the source code of [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) and wrote a javascript implementation of [dfu_transport_serial.py](https://github.com/adafruit/Adafruit_nRF52_nrfutil/blob/master/nordicsemi/dfu/dfu_transport_serial.py)
 
@@ -30,6 +30,8 @@ There was an existing package called [pc-nrf-dfu-js](https://github.com/NordicSe
 - Put your device into DFU mode.
 - Select a firmware file and click flash.
 - Your device should reboot into the new firmware.
+
+> Note: At this time, firmware hashes for RNode are not configured. This is next on the todo list.
 
 ## Device Support
 
