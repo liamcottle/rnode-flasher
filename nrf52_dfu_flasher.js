@@ -175,17 +175,15 @@ class Nrf52DfuFlasher {
         console.log("Sending DFU init packet");
         await this.sendInitPacket(init_packet);
 
-        console.log("Sending firmware file")
+        console.log("Sending firmware");
         await this.sendFirmware(firmware, progressCallback);
 
         // close port
-        console.log("Closing Port");
+        console.log("Closing serial port");
         await this.serialPort.close();
 
         // todo
         // sleep(self.dfu_transport.get_activate_wait_time())
-
-        console.log("Done");
 
     }
 
@@ -398,11 +396,6 @@ class Nrf52DfuFlasher {
         await this.sendPacket(this.createHciPacketFromFrame([
             ...this.int32ToBytes(this.DFU_STOP_DATA_PACKET),
         ]));
-
-        // send final progress
-        if(progressCallback){
-            progressCallback(100);
-        }
 
     }
 

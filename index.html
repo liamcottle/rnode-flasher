@@ -41,10 +41,10 @@
         </div>
 
         <div v-else>
-            <span v-if="progress > 0">Flashing: {{progress}}%</span>
+            <span v-if="flashingProgress > 0">Flashing: {{flashingProgress}}%</span>
             <span v-else>Flashing: please wait...</span>
             <div class="mt-1 w-[200px] overflow-hidden rounded-full bg-gray-200">
-                <div class="h-2 rounded-full bg-blue-600" :style="{ 'width': `${progress}%`}"></div>
+                <div class="h-2 rounded-full bg-blue-600" :style="{ 'width': `${flashingProgress}%`}"></div>
             </div>
         </div>
 
@@ -64,7 +64,7 @@
         data() {
             return {
                 isFlashing: false,
-                progress: 0,
+                flashingProgress: 0,
             };
         },
         mounted() {
@@ -114,22 +114,24 @@
 
                 // update progress
                 this.isFlashing = true;
-                this.progress = 0;
+                this.flashingProgress = 0;
 
-                // flash file
                 try {
+
+                    // flash file
                     const flasher = new Nrf52DfuFlasher(serialPort);
-                    await flasher.flash(file, (percentage) => {
-                        this.progress = percentage;
-                        if(this.progress === 100){
-                            this.isFlashing = false;
-                            alert("Firmware has been flashed!");
-                        }
+                    await flasher.flash(file, (percentage, message) => {
+                        this.flashingProgress = percentage;
                     });
+
+                    // flashing successful
+                    alert("Firmware has been flashed!");
+
                 } catch(e) {
-                    this.isFlashing = false;
                     alert("Firmware flashing failed: " + e);
                     console.log(e);
+                } finally {
+                    this.isFlashing = false;
                 }
 
             },
