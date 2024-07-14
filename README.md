@@ -37,6 +37,13 @@ The following list of devices are supported:
 
 - RAK4631
 
+## TODO
+
+- support configuring eeprom with device signatures and firmware hashes
+- support configuring tnc mode, also useful for the [transport node firmware](https://github.com/attermann/microReticulum_Firmware/commits/transport_node/)
+- support other devices, such as ESP32/Heltec V3
+- support flashing existing firmware files from api
+
 ## License
 
 MIT
