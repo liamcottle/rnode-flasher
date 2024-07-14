@@ -112,17 +112,25 @@
                     return;
                 }
 
-                // flash file
+                // update progress
                 this.isFlashing = true;
                 this.progress = 0;
-                const flasher = new Nrf52DfuFlasher(serialPort);
-                await flasher.flash(file, (percentage) => {
-                    this.progress = percentage;
-                    if(this.progress === 100){
-                        this.isFlashing = false;
-                        alert("Firmware has been flashed!");
-                    }
-                });
+
+                // flash file
+                try {
+                    const flasher = new Nrf52DfuFlasher(serialPort);
+                    await flasher.flash(file, (percentage) => {
+                        this.progress = percentage;
+                        if(this.progress === 100){
+                            this.isFlashing = false;
+                            alert("Firmware has been flashed!");
+                        }
+                    });
+                } catch(e) {
+                    this.isFlashing = false;
+                    alert("Firmware flashing failed: " + e);
+                    console.log(e);
+                }
 
             },
             async detect() {
