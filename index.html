@@ -60,6 +60,20 @@
         </button>
     </div>
 
+    <div>
+        <div>4. Provision eeprom with device info, checksum and signature.</div>
+        <button @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            Provision
+        </button>
+    </div>
+
+    <div>
+        <div>0. Extra Tools</div>
+        <button @click="wipe" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            Wipe EEPROM
+        </button>
+    </div>
+
 </div>
 
 <script>
@@ -178,6 +192,148 @@
                 });
 
                 await rnode.close();
+
+            },
+            packInt(value) {
+                const buffer = new ArrayBuffer(4); // 4 bytes for a 32-bit integer
+                const view = new DataView(buffer);
+                view.setUint32(0, value, false); // false for big-endian
+                return new Uint8Array(buffer);
+            },
+            unpackInt(byteArray) {
+                const buffer = new Uint8Array(byteArray).buffer; // Get the underlying ArrayBuffer from the byte array
+                const view = new DataView(buffer);
+                return view.getUint32(0, false); // false for big-endian
+            },
+            async wipe() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // ask user to confirm
+                if(!confirm("Are you sure you want to wipe the eeprom on this device?")){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // wipe eeprom
+                console.log("wiping eeprom");
+                await rnode.wipeRom();
+                console.log("wiping eeprom: done");
+
+                // must reboot device after wipe
+                await rnode.reset();
+                await rnode.close();
+
+                // done
+                alert("eeprom has been wiped!");
+
+            },
+            async provision() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(details){
+                    console.log(details);
+                    alert("Eeprom is already provisioned. You must wipe it to reprovision!");
+                    await rnode.close();
+                    return;
+                }
+
+                console.log("device is not provisioned yet, doing it now...");
+
+                // determine device info
+                const product = ROM.PRODUCT_RAK4631;
+                const model = ROM.MODEL_12;
+                const hardwareRevision = 0x1;
+                const serialNumber = 1;
+                const timestampInSeconds = Math.floor(Date.now() / 1000);
+                const serialBytes = this.packInt(serialNumber);
+                const timestampBytes = this.packInt(timestampInSeconds);
+
+                // compute device info checksum
+                const checksum = Utils.md5([
+                    product,
+                    model,
+                    hardwareRevision,
+                    ...serialBytes,
+                    ...timestampBytes,
+                ]);
+
+                console.log("checksum", checksum);
+
+                // write device info to eeprom
+                console.log("writing device info");
+                await rnode.writeRom(ROM.ADDR_PRODUCT, product);
+                await rnode.writeRom(ROM.ADDR_MODEL, model);
+                await rnode.writeRom(ROM.ADDR_HW_REV, hardwareRevision);
+                await rnode.writeRom(ROM.ADDR_SERIAL, serialBytes[0]);
+                await rnode.writeRom(ROM.ADDR_SERIAL + 1, serialBytes[1]);
+                await rnode.writeRom(ROM.ADDR_SERIAL + 2, serialBytes[2]);
+                await rnode.writeRom(ROM.ADDR_SERIAL + 3, serialBytes[3]);
+                await rnode.writeRom(ROM.ADDR_MADE, timestampBytes[0]);
+                await rnode.writeRom(ROM.ADDR_MADE + 1, timestampBytes[1]);
+                await rnode.writeRom(ROM.ADDR_MADE + 2, timestampBytes[2]);
+                await rnode.writeRom(ROM.ADDR_MADE + 3, timestampBytes[3]);
+                console.log("writing device info: done");
+
+                // write checksum to eeprom
+                console.log("writing checksum");
+                for(var i = 0; i < 16; i++){
+                    await rnode.writeRom(ROM.ADDR_CHKSUM + i, checksum[i]);
+                }
+                console.log("writing checksum: done");
+
+                // write signature to eeprom
+                // fixme: actually implement signature, for now it's just zeroed out
+                console.log("writing signature");
+                for(var i = 0; i < 128; i++){
+                    // await rnode.writeRom(ROM.ADDR_SIGNATURE + i, signature[i]);
+                    await rnode.writeRom(ROM.ADDR_SIGNATURE + i, 0x00); // fixme: fake signature
+                }
+                console.log("writing signature: done");
+
+                // write info lock byte to eeprom
+                console.log("writing lock byte");
+                await rnode.writeRom(ROM.ADDR_INFO_LOCK, ROM.INFO_LOCK_BYTE);
+                console.log("writing lock byte: done");
+
+                // todo get partition hash from release.json OR directly from the firmware.bin
+                // partition_filename = fw_filename.replace(".zip", ".bin")
+                // partition_hash = get_partition_hash(rnode.platform, UPD_DIR+"/"+selected_version+"/"+partition_filename)
+
+                // todo set firmware hash in eeprom
+                // RNS.log("Setting firmware checksum...")
+                // rnode.set_firmware_hash(partition_hash)
+
+                // done
+                await rnode.reset();
+                await rnode.close();
+                console.log("done");
 
             },
         },

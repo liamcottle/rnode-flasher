@@ -1,3 +1,49 @@
+class Utils {
+
+    /**
+     * Waits for the provided milliseconds, and then resolves.
+     * @param millis
+     * @returns {Promise<void>}
+     */
+    static async sleepMillis(millis) {
+        await new Promise((resolve) => {
+            setTimeout(resolve, millis);
+        });
+    }
+
+    static bytesToHex(bytes) {
+        for(var hex = [], i = 0; i < bytes.length; i++){
+            var current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+            hex.push((current >>> 4).toString(16));
+            hex.push((current & 0xF).toString(16));
+        }
+        return hex.join("");
+    }
+
+    static md5(data) {
+        var bytes = [];
+        const hash = CryptoJS.MD5(CryptoJS.enc.Hex.parse(this.bytesToHex(data)));
+        for(var i = 0; i < hash.sigBytes; i++){
+            bytes.push((hash.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff);
+        }
+        return bytes;
+    }
+
+    static packUInt32BE(value) {
+        const buffer = new ArrayBuffer(4);
+        const view = new DataView(buffer);
+        view.setUint32(0, value, false);
+        return new Uint8Array(buffer);
+    }
+
+    static unpackUInt32BE(byteArray) {
+        const buffer = new Uint8Array(byteArray).buffer;
+        const view = new DataView(buffer);
+        return view.getUint32(0, false);
+    }
+
+}
+
 class RNode {
 
     KISS_FEND = 0xC0;
@@ -25,17 +71,30 @@ class RNode {
     CMD_DEV_HASH = 0x56;
     CMD_FW_VERSION = 0x50;
     CMD_ROM_READ = 0x51;
+    CMD_ROM_WRITE = 0x52;
     CMD_CONF_SAVE = 0x53;
     CMD_CONF_DELETE = 0x54;
+    CMD_FW_HASH = 0x58;
+    CMD_UNLOCK_ROM = 0x59;
+    ROM_UNLOCK_BYTE = 0xF8;
     CMD_HASHES = 0x60;
+    CMD_FW_UPD = 0x61;
 
     CMD_BT_CTRL = 0x46;
     CMD_BT_PIN = 0x62;
 
     CMD_DETECT = 0x08;
-
     DETECT_REQ = 0x73;
     DETECT_RESP = 0x46;
+
+    RADIO_STATE_OFF = 0x00;
+    RADIO_STATE_ON = 0x01;
+    RADIO_STATE_ASK = 0xFF;
+
+    CMD_ERROR = 0x90
+    ERROR_INITRADIO = 0x01
+    ERROR_TXFAILED = 0x02
+    ERROR_EEPROM_LOCKED = 0x03
 
     PLATFORM_AVR = 0x90;
     PLATFORM_ESP32 = 0x80;
@@ -462,6 +521,75 @@ class RNode {
         ]);
     }
 
+    async setFrequency(frequencyInHz) {
+
+        const c1 = frequencyInHz >> 24;
+        const c2 = frequencyInHz >> 16 & 0xFF;
+        const c3 = frequencyInHz >> 8 & 0xFF;
+        const c4 = frequencyInHz & 0xFF;
+
+        await this.sendKissCommand([
+            this.CMD_FREQUENCY,
+            c1,
+            c2,
+            c3,
+            c4,
+        ]);
+
+    }
+
+    async setBandwidth(bandwidthInHz) {
+
+        const c1 = bandwidthInHz >> 24;
+        const c2 = bandwidthInHz >> 16 & 0xFF;
+        const c3 = bandwidthInHz >> 8 & 0xFF;
+        const c4 = bandwidthInHz & 0xFF;
+
+        await this.sendKissCommand([
+            this.CMD_BANDWIDTH,
+            c1,
+            c2,
+            c3,
+            c4,
+        ]);
+
+    }
+
+    async setTxPower(db) {
+        await this.sendKissCommand([
+            this.CMD_TXPOWER,
+            db,
+        ]);
+    }
+
+    async setSpreadingFactor(spreadingFactor) {
+        await this.sendKissCommand([
+            this.CMD_SF,
+            spreadingFactor,
+        ]);
+    }
+
+    async setCodingRate(codingRate) {
+        await this.sendKissCommand([
+            this.CMD_CR,
+            codingRate,
+        ]);
+    }
+
+    async setRadioStateOn() {
+        await this.sendKissCommand([
+            this.CMD_RADIO_STATE,
+            this.RADIO_STATE_ON,
+        ]);
+    }
+
+    async setRadioStateOff() {
+        await this.sendKissCommand([
+            this.CMD_RADIO_STATE,
+            this.RADIO_STATE_OFF,
+        ]);
+    }
+
     // setTNCMode
     async saveConfig() {
         await this.sendKissCommand([
@@ -476,6 +604,46 @@ class RNode {
             this.CMD_CONF_DELETE,
             0x00,
         ]);
+    }
+
+    async indicateFirmwareUpdate() {
+        await this.sendKissCommand([
+            this.CMD_FW_UPD,
+            0x01,
+        ]);
+    }
+
+    async setFirmwareHash(hash) {
+        await this.sendKissCommand([
+            this.CMD_FW_HASH,
+            ...hash,
+        ]);
+    }
+
+    async writeRom(address, value) {
+
+        // write to rom
+        await this.sendKissCommand([
+            this.CMD_ROM_WRITE,
+            address,
+            value,
+        ]);
+
+        // wait a bit to allow device to write to rom
+        await Utils.sleepMillis(85);
+
+    }
+
+    async wipeRom() {
+
+        await this.sendKissCommand([
+            this.CMD_UNLOCK_ROM,
+            this.ROM_UNLOCK_BYTE,
+        ]);
+
+        // wiping can take up to 30 seconds
+        await Utils.sleepMillis(30000);
+
     }
 
     async getRomAsObject() {
@@ -622,12 +790,12 @@ class ROM {
     }
 
     getCalculatedChecksum() {
-        return this.md5([
+        return Utils.md5([
             this.getProduct(),
             this.getModel(),
             this.getHardwareRevision(),
-            this.getSerialNumber(),
-            this.getMade(),
+            ...this.getSerialNumber(),
+            ...this.getMade(),
         ]);
     }
 
@@ -665,15 +833,6 @@ class ROM {
         return this.eeprom[ROM.ADDR_CONF_OK] === ROM.CONF_OK_BYTE;
     }
 
-    md5(data) {
-        var bytes = [];
-        const hash = CryptoJS.MD5(data);
-        for(var i = 0; i < hash.sigBytes; i++){
-            bytes.push((hash.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff);
-        }
-        return bytes;
-    }
-
     parse() {
 
         // ensure info lock byte is set
@@ -681,18 +840,23 @@ class ROM {
             return null;
         }
 
-        // parse expected details
+        // convert to hex
+        const checksumHex = Utils.bytesToHex(this.getChecksum());
+        const calculatedChecksumHex = Utils.bytesToHex(this.getCalculatedChecksum());
+        const signatureHex = Utils.bytesToHex(this.getSignature());
+
+        // add details
         var details = {
             is_provisioned: true,
             is_configured: this.isConfigured(),
             product: this.getProduct(),
             model: this.getModel(),
             hardware_revision: this.getHardwareRevision(),
-            serial_number: this.getSerialNumber(),
-            made: this.getMade(),
-            checksum: this.getChecksum(),
-            signature: this.getSignature(),
-            calculated_checksum: this.getCalculatedChecksum(),
+            serial_number: Utils.unpackUInt32BE(this.getSerialNumber()),
+            made: Utils.unpackUInt32BE(this.getMade()),
+            checksum: checksumHex,
+            calculated_checksum: calculatedChecksumHex,
+            signature: signatureHex,
         }
 
         // if configured, add configuration to details
@@ -707,7 +871,7 @@ class ROM {
             };
         }
 
-        // if checksum in eeprom does not match calculated checksum, it is not provisioned
+        // if checksum in eeprom does not match checksum calculated from info, it is not provisioned
         if(details.checksum !== details.calculated_checksum){
             details.is_provisioned = false;
         }
