@@ -24,6 +24,13 @@ The [nrf52_dfu_flasher.js](./nrf52_dfu_flasher.js) in this project implements a 
 
 There was an existing package called [pc-nrf-dfu-js](https://github.com/NordicSemiconductor/pc-nrf-dfu-js), however this repo had been archived and didn't appear to support the latest DFU protocol.
 
+## How to use it?
+
+- Open [index.html](./index.html) in your web browser.
+- Put your device into DFU mode.
+- Select a firmware file and click flash.
+- Your device should reboot into the new firmware.
+
 ## Device Support
 
 The following list of devices are supported:
