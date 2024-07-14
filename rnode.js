@@ -1,7 +1,5 @@
 class RNode {
 
-    static BAUD_RATE = 115200;
-
     KISS_FEND = 0xC0;
     KISS_FESC = 0xDB;
     KISS_TFEND = 0xDC;
@@ -60,16 +58,25 @@ class RNode {
     HASH_TYPE_TARGET_FIRMWARE = 0x01;
     HASH_TYPE_FIRMWARE = 0x02;
 
-    constructor() {
-        this.readable = null;
-        this.writable = null;
+    constructor(serialPort) {
+        this.serialPort = serialPort;
+        this.readable = serialPort.readable;
+        this.writable = serialPort.writable;
     }
 
-    static fromSerialPort(port) {
-        const rnode = new RNode();
-        rnode.readable = port.readable;
-        rnode.writable = port.writable;
-        return rnode;
+    static async fromSerialPort(serialPort) {
+
+        // open port
+        await serialPort.open({
+            baudRate: 115200,
+        });
+
+        return new RNode(serialPort);
+
+    }
+
+    async close() {
+        await this.serialPort.close();
     }
 
     async write(bytes) {

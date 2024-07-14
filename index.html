@@ -33,6 +33,12 @@
         </button>
     </div>
 
+    <div>
+        <button @click="detect" class="border px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            Detect
+        </button>
+    </div>
+
 </div>
 
 <script>
@@ -46,36 +52,71 @@
 
         },
         methods: {
-            async connect() {
+            async askForSerialPort() {
 
                 if(!navigator.serial){
-                    alert("Serial is not supported in this browser");
-                    return;
+                    alert("Web Serial is not supported in this browser");
+                    return null;
                 }
 
                 // ask user to select device
-                const serialPort = await navigator.serial.requestPort({
+                return await navigator.serial.requestPort({
                     filters: [],
                 });
 
-                this.flasher = new Nrf52DfuFlasher(serialPort);
+            },
+            async enterDfuMode() {
 
-                // await this.flasher.enterDfuMode();
-
-                return;
-
-                await serialPort.open({
-                    baudRate: RNode.BAUD_RATE,
-                });
-
-                const rnode = RNode.fromSerialPort(serialPort);
-
-                if(!await rnode.detect()){
-                    console.log("device is not an rnode");
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
                     return;
                 }
 
-                // dump node info
+                // enter dfu mode
+                const flasher = new Nrf52DfuFlasher(serialPort);
+                await flasher.enterDfuMode();
+
+            },
+            async flash() {
+
+                // ensure firmware file selected
+                const file = this.$refs["file"].files[0];
+                if(!file){
+                    alert("Select a firmware file first");
+                    return;
+                }
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // flash file
+                const flasher = new Nrf52DfuFlasher(serialPort);
+                await flasher.flash(file);
+
+            },
+            async detect() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                const firmwareVersion = await rnode.getFirmwareVersion();
+                alert("RNode has firmware v" + firmwareVersion);
+
                 console.log({
                     firmware_version: await rnode.getFirmwareVersion(),
                     platform: await rnode.getPlatform(),
@@ -96,104 +137,7 @@
                     rssi_stat: await rnode.getRssiStat(),
                 });
 
-                // console.log(response.map(x => x.toString(16).padStart(2, '0')).join(''));
-
-
-                // rnode.device_probe()
-                // rnode.download_eeprom()
-
-                // if rnode.provisioned and rnode.signature_valid:
-                // This device is already installed and provisioned. No further action will
-
-                // if rnode.detected:
-                // The device seems to have an RNode firmware installed, but it was not provisioned correctly, or it is corrupt
-                // We are going to reinstall the correct firmware and provision it.
-                // else
-                // It looks like this is a fresh device with no RNode firmware.
-
-                // selected_product = ROM.PRODUCT_RAK4631
-                // selected_platform = None
-                // selected_model = None
-                // selected_mcu = ROM.MCU_NRF52
-
-                // print("\nWhat band is this RAK4631 for?\n")
-
-                // print("[1] 433 MHz")
-                // selected_model = ROM.MODEL_11
-                // selected_platform = ROM.PLATFORM_NRF52
-
-                // print("[2] 868 MHz")
-                // print("[3] 915 MHz")
-                // print("[4] 923 MHz")
-                // selected_model = ROM.MODEL_12
-                // selected_platform = ROM.PLATFORM_NRF52
-
-                // fw_filename = models[selected_model][4]
-                // if fw_filename == None:
-                // Sorry, no firmware for your board currently exists.
-
-                // args.key = True
-                // args.port = selected_port.device
-                // args.platform = selected_platform
-                // args.hwrev = 1
-                // mapped_model = selected_model
-                // mapped_product = selected_product
-                // args.update = False
-                // args.flash = True
-
-                // ensure_firmware_file(fw_filename)
-
-                // get or generate device signing key (rns identity is used)
-                // get or generate eeprom signing key (rsa private key is generated)
-                // get partition hash (sha256 of firmware file for rak)
-
-                // extract firmware zip folder
-
-                // get flasher call
-                // adafruit-nrfutil dfu serial --package fw_filename -p args.port -b 115200 -t 1200
-                // adafruit-nrfutil dfu serial --package ~/Downloads/rnode_firmware_rak4631.zip -p /dev/cu.usbmodem14401 -b 115200 -t 1200
-                // --package dfu filename
-                // -p comport
-                // -b baud rate
-                // -t Open port with specified baud then close it, before uploading
-
-                // https://github.com/adafruit/Adafruit_nRF52_nrfutil/blob/master/nordicsemi/__main__.py
-                // https://github.com/adafruit/Adafruit_nRF52_nrfutil/blob/master/nordicsemi/dfu/dfu_transport_serial.py#L49
-                // https://github.com/markqvist/Reticulum/discussions/471
-
-
-            },
-            async initFlasher() {
-
-                if(!navigator.serial){
-                    alert("Web Serial is not supported in this browser");
-                    return;
-                }
-
-                // ask user to select device
-                const serialPort = await navigator.serial.requestPort({
-                    filters: [],
-                });
-
-                return new Nrf52DfuFlasher(serialPort);
-
-            },
-            async enterDfuMode() {
-                const flasher = await this.initFlasher();
-                await flasher.enterDfuMode();
-            },
-            async flash() {
-
-                // ensure firmware file selected
-                const file = this.$refs["file"].files[0];
-                if(!file){
-                    alert("Select a firmware file first");
-                    return;
-                }
-
-                // flash file
-                const flasher = await this.initFlasher();
-                await flasher.flash(file);
+                await rnode.close();
 
             },
         },

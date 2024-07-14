@@ -1,0 +1,61 @@
+rnode.device_probe()
+rnode.download_eeprom()
+
+if rnode.provisioned and rnode.signature_valid:
+This device is already installed and provisioned. No further action will
+
+if rnode.detected:
+The device seems to have an RNode firmware installed, but it was not provisioned correctly, or it is corrupt
+We are going to reinstall the correct firmware and provision it.
+else
+It looks like this is a fresh device with no RNode firmware.
+
+selected_product = ROM.PRODUCT_RAK4631
+selected_platform = None
+selected_model = None
+selected_mcu = ROM.MCU_NRF52
+
+print("\nWhat band is this RAK4631 for?\n")
+
+print("[1] 433 MHz")
+selected_model = ROM.MODEL_11
+selected_platform = ROM.PLATFORM_NRF52
+
+print("[2] 868 MHz")
+print("[3] 915 MHz")
+print("[4] 923 MHz")
+selected_model = ROM.MODEL_12
+selected_platform = ROM.PLATFORM_NRF52
+
+fw_filename = models[selected_model][4]
+if fw_filename == None:
+Sorry, no firmware for your board currently exists.
+
+args.key = True
+args.port = selected_port.device
+args.platform = selected_platform
+args.hwrev = 1
+mapped_model = selected_model
+mapped_product = selected_product
+args.update = False
+args.flash = True
+
+ensure_firmware_file(fw_filename)
+
+get or generate device signing key (rns identity is used)
+get or generate eeprom signing key (rsa private key is generated)
+get partition hash (sha256 of firmware file for rak)
+
+extract firmware zip folder
+
+get flasher call
+adafruit-nrfutil dfu serial --package fw_filename -p args.port -b 115200 -t 1200
+adafruit-nrfutil dfu serial --package ~/Downloads/rnode_firmware_rak4631.zip -p /dev/cu.usbmodem14401 -b 115200 -t 1200
+--package dfu filename
+-p comport
+-b baud rate
+-t Open port with specified baud then close it, before uploading
+
+https://github.com/adafruit/Adafruit_nRF52_nrfutil/blob/master/nordicsemi/__main__.py
+https://github.com/adafruit/Adafruit_nRF52_nrfutil/blob/master/nordicsemi/dfu/dfu_transport_serial.py#L49
+https://github.com/markqvist/Reticulum/discussions/471

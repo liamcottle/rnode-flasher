@@ -1,5 +1,5 @@
 /**
- * A web based nRF52 flasher based on:
+ * A Web Serial based nRF52 flasher written by liam@liamcottle.com based on dfu_transport.serial.py
  * https://github.com/adafruit/Adafruit_nRF52_nrfutil/blob/master/nordicsemi/dfu/dfu_transport_serial.py
  */
 class Nrf52DfuFlasher {
@@ -10,7 +10,7 @@ class Nrf52DfuFlasher {
 
     FLASH_BAUD = 115200;
 
-    HexType_APPLICATION = 4;
+    HEX_TYPE_APPLICATION = 4;
 
     DFU_INIT_PACKET = 1;
     DFU_START_PACKET = 3;
@@ -31,15 +31,30 @@ class Nrf52DfuFlasher {
 
     constructor(serialPort) {
         this.serialPort = serialPort;
-        this.sequence_number = 0;
+        this.sequenceNumber = 0;
         this.sd_size = 0;
         this.total_size = 0;
     }
 
-    async send_packet(data) {
+    /**
+     * Waits for the provided milliseconds, and then resolves.
+     * @param millis
+     * @returns {Promise<void>}
+     */
+    async sleepMillis(millis) {
+        await new Promise((resolve) => {
+            setTimeout(resolve, millis);
+        });
+    }
+
+    /**
+     * Writes the provided data to the Serial Port.
+     * @param data
+     * @returns {Promise<void>}
+     */
+    async sendPacket(data) {
         const writer = this.serialPort.writable.getWriter();
         try {
-            console.log("writing", data);
             await writer.write(new Uint8Array(data));
         } finally {
             writer.releaseLock();
@@ -47,7 +62,7 @@ class Nrf52DfuFlasher {
     }
 
     /**
-     * Puts an nRF52 board into DFU mode by quickly opening and closing a serial port
+     * Puts an nRF52 board into DFU mode by quickly opening and closing a serial port.
      * @returns {Promise<void>}
      */
     async enterDfuMode() {
@@ -58,20 +73,21 @@ class Nrf52DfuFlasher {
         });
 
         // wait SERIAL_PORT_OPEN_WAIT_TIME before closing port
-        await new Promise((resolve, reject) => {
-            setTimeout(resolve, this.SERIAL_PORT_OPEN_WAIT_TIME * 1000);
-        });
+        await this.sleepMillis(this.SERIAL_PORT_OPEN_WAIT_TIME * 1000);
 
         // close port
         await this.serialPort.close();
 
         // wait TOUCH_RESET_WAIT_TIME for device to enter into DFU mode
-        await new Promise((resolve, reject) => {
-            setTimeout(resolve, this.TOUCH_RESET_WAIT_TIME * 1000);
-        });
+        await this.sleepMillis(this.TOUCH_RESET_WAIT_TIME * 1000);
 
     }
 
+    /**
+     * Flashes the provided firmware zip.
+     * @param firmwareZipBlob
+     * @returns {Promise<void>}
+     */
     async flash(firmwareZipBlob) {
 
         // read zip file
@@ -81,6 +97,9 @@ class Nrf52DfuFlasher {
 
         // find manifest file
         const manifestFile = zipEntries.find((zipEntry) => zipEntry.filename === "manifest.json");
+        if(!manifestFile){
+            throw "manifest.json not found in firmware file!";
+        }
 
         // read manifest file as text
         const text = await manifestFile.getData(new window.zip.TextWriter());
@@ -89,29 +108,33 @@ class Nrf52DfuFlasher {
         const json = JSON.parse(text);
         const manifest = json.manifest;
 
-        console.log(manifest);
-
+        // todo softdevice_bootloader
         // if self.manifest.softdevice_bootloader:
         // self._dfu_send_image(HexType.SD_BL, self.manifest.softdevice_bootloader)
-        //
+
+        // todo softdevice
         // if self.manifest.softdevice:
         // self._dfu_send_image(HexType.SOFTDEVICE, self.manifest.softdevice)
-        //
+
+        // todo bootloader
         // if self.manifest.bootloader:
         // self._dfu_send_image(HexType.BOOTLOADER, self.manifest.bootloader)
 
         // flash application image
         if(manifest.application){
-            await this.dfuSendImage(this.HexType_APPLICATION, zipEntries, manifest.application);
+            await this.dfuSendImage(this.HEX_TYPE_APPLICATION, zipEntries, manifest.application);
         }
 
     }
 
-    async dfuSendImage(program_mode, zipEntries, firmware_manifest) {
-
-        if(!firmware_manifest){
-            throw "firmware_manifest must be provided.";
-        }
+    /**
+     * Sends the firmware image to the device in DFU mode.
+     * @param programMode
+     * @param zipEntries
+     * @param firmwareManifest
+     * @returns {Promise<void>}
+     */
+    async dfuSendImage(programMode, zipEntries, firmwareManifest) {
 
         // open port
         await this.serialPort.open({
@@ -119,49 +142,39 @@ class Nrf52DfuFlasher {
         });
 
         // wait SERIAL_PORT_OPEN_WAIT_TIME
-        await new Promise((resolve, reject) => {
-            setTimeout(resolve, this.SERIAL_PORT_OPEN_WAIT_TIME * 1000);
-        });
+        await this.sleepMillis(this.SERIAL_PORT_OPEN_WAIT_TIME * 1000);
 
-        var softdevice_size = 0
-        var bootloader_size = 0
-        var application_size = 0
+        // file sizes
+        var softdeviceSize = 0
+        var bootloaderSize = 0
+        var applicationSize = 0
 
         // read bin file (firmware)
-        const binFile = zipEntries.find((zipEntry) => zipEntry.filename === firmware_manifest.bin_file);
+        const binFile = zipEntries.find((zipEntry) => zipEntry.filename === firmwareManifest.bin_file);
         const firmware = await binFile.getData(new window.zip.Uint8ArrayWriter());
-        console.log(firmware);
 
         // read dat file (init packet)
-        const datFile = zipEntries.find((zipEntry) => zipEntry.filename === firmware_manifest.dat_file);
+        const datFile = zipEntries.find((zipEntry) => zipEntry.filename === firmwareManifest.dat_file);
         const init_packet = await datFile.getData(new window.zip.Uint8ArrayWriter());
-        console.log(init_packet);
 
         // only support flashing application for now
-        if(program_mode !== this.HexType_APPLICATION){
+        if(programMode !== this.HEX_TYPE_APPLICATION){
             throw "not implemented";
         }
 
-        if(program_mode === this.HexType_APPLICATION){
-            application_size = firmware.length;
-            console.log("app size", application_size);
+        // determine application size
+        if(programMode === this.HEX_TYPE_APPLICATION){
+            applicationSize = firmware.length;
         }
 
-        // todo test this works...
         console.log("Sending DFU start packet");
-        await this.send_start_dfu(program_mode, softdevice_size, bootloader_size, application_size);
+        await this.sendStartDfu(programMode, softdeviceSize, bootloaderSize, applicationSize);
 
         console.log("Sending DFU init packet");
-        await this.send_init_packet(init_packet);
+        await this.sendInitPacket(init_packet);
 
         console.log("Sending firmware file")
-        await this.send_firmware(firmware);
-
-        // console.log("Sending validate firmware")
-        // await this.send_validate_firmware();
-        //
-        // console.log("Sending activate firmware")
-        // await this.send_activate_firmware();
+        await this.sendFirmware(firmware);
 
         // close port
         console.log("Closing Port");
@@ -174,20 +187,19 @@ class Nrf52DfuFlasher {
 
     }
 
-    // confirmed working
+    /**
+     * Calculates CRC16 on the provided binaryData
+     * @param {Uint8Array} binaryData - Array with data to run CRC16 calculation on
+     * @param {number} crc - CRC value to start calculation with
+     * @return {number} - Calculated CRC value of binaryData
+     */
     calcCrc16(binaryData, crc = 0xffff) {
-        /**
-         * Calculates CRC16 on binaryData
-         *
-         * @param {Uint8Array} binaryData - Array with data to run CRC16 calculation on
-         * @param {number} crc - CRC value to start calculation with
-         * @return {number} - Calculated CRC value of binaryData
-         */
-        if (!(binaryData instanceof Uint8Array)) {
+
+        if(!(binaryData instanceof Uint8Array)){
             throw new Error("calcCrc16 requires Uint8Array input");
         }
 
-        for (let b of binaryData) {
+        for(let b of binaryData){
             crc = (crc >> 8 & 0x00FF) | (crc << 8 & 0xFF00);
             crc ^= b;
             crc ^= (crc & 0x00FF) >> 4;
@@ -196,26 +208,25 @@ class Nrf52DfuFlasher {
         }
 
         return crc & 0xFFFF;
+
     }
 
-    // confirmed working
+    /**
+     * Encode esc characters in a SLIP package.
+     * Replace 0xC0 with 0xDBDC and 0xDB with 0xDBDD.
+     * @param dataIn
+     * @returns {*[]}
+     */
     slipEncodeEscChars(dataIn) {
-        /**
-         * Encode esc characters in a SLIP package.
-         *
-         * Replace 0xC0 with 0xDBDC and 0xDB with 0xDBDD.
-         *
-         * @param {string} dataIn - String to encode
-         * @return {string} - String with encoded packet
-         */
+
         let result = [];
 
-        for (let i = 0; i < dataIn.length; i++) {
+        for(let i = 0; i < dataIn.length; i++){
             let char = dataIn[i];
-            if (char === 0xC0) {
+            if(char === 0xC0){
                 result.push(0xDB);
                 result.push(0xDC);
-            } else if (char === 0xDB) {
+            } else if(char === 0xDB) {
                 result.push(0xDB);
                 result.push(0xDD);
             } else {
@@ -223,123 +234,155 @@ class Nrf52DfuFlasher {
             }
         }
 
-        // return String.fromCharCode(...result);
         return result;
 
     }
 
-    // seems to be working as expected, was hard to test
-    frameToHciPacket(frame) {
+    /**
+     * Creates an HCI packet from the provided frame data.
+     * https://github.com/adafruit/Adafruit_nRF52_nrfutil/blob/master/nordicsemi/dfu/dfu_transport_serial.py#L332
+     * @param frame
+     * @returns {*[]}
+     */
+    createHciPacketFromFrame(frame) {
 
-        this.sequence_number = (this.sequence_number + 1) % 8;
+        // increase sequence number, but roll over at 8
+        this.sequenceNumber = (this.sequenceNumber + 1) % 8;
 
-        const slip_bytes = this.slipPartsToFourBytes(
-            this.sequence_number,
+        // create slip header
+        const slipHeaderBytes = this.createSlipHeader(
+            this.sequenceNumber,
             this.DATA_INTEGRITY_CHECK_PRESENT,
             this.RELIABLE_PACKET,
             this.HCI_PACKET_TYPE,
             frame.length,
         );
 
-        let tempData = [
-            ...slip_bytes,
+        // create packet data
+        let data = [
+            ...slipHeaderBytes,
             ...frame,
         ];
 
-        // Add escape characters
-        const crc = this.calcCrc16(new Uint8Array(tempData), 0xffff);
-        tempData.push(crc & 0xFF)
-        tempData.push((crc & 0xFF00) >> 8)
+        // add crc of data
+        const crc = this.calcCrc16(new Uint8Array(data), 0xffff);
+        data.push(crc & 0xFF);
+        data.push((crc & 0xFF00) >> 8);
 
+        // add escape characters
         return [
             0xc0,
-            ...this.slipEncodeEscChars(tempData),
+            ...this.slipEncodeEscChars(data),
             0xc0,
         ];
 
     }
 
-    get_erase_wait_time() {
-        // timeout is not least than 0.5 seconds
+    /**
+     * Calculate how long we should wait for erasing data.
+     * @returns {number}
+     */
+    getEraseWaitTime() {
+        // always wait at least 0.5 seconds
         return Math.max(0.5, ((this.total_size / this.FLASH_PAGE_SIZE) + 1) * this.FLASH_PAGE_ERASE_TIME);
     }
 
-    // frame seems to be fine
-    async send_start_dfu(mode, softdevice_size = 0, bootloader_size = 0, app_size = 0){
+    /**
+     * Constructs the image size packet sent in the DFU Start packet.
+     * @param softdeviceSize
+     * @param bootloaderSize
+     * @param appSize
+     * @returns {number[]}
+     */
+    createImageSizePacket(softdeviceSize = 0, bootloaderSize = 0, appSize = 0) {
+        return [
+            ...this.int32ToBytes(softdeviceSize),
+            ...this.int32ToBytes(bootloaderSize),
+            ...this.int32ToBytes(appSize),
+        ];
+    }
 
+    /**
+     * Sends the DFU Start packet to the device.
+     * @param mode
+     * @param softdevice_size
+     * @param bootloader_size
+     * @param app_size
+     * @returns {Promise<void>}
+     */
+    async sendStartDfu(mode, softdevice_size = 0, bootloader_size = 0, app_size = 0){
+
+        // create frame
         const frame = [
-            ...this.toBytesInt32(this.DFU_START_PACKET),
-            ...this.toBytesInt32(mode),
-            ...this.create_image_size_packet(softdevice_size, bootloader_size, app_size),
+            ...this.int32ToBytes(this.DFU_START_PACKET),
+            ...this.int32ToBytes(mode),
+            ...this.createImageSizePacket(softdevice_size, bootloader_size, app_size),
         ];
 
-        await this.send_packet(this.frameToHciPacket(frame));
+        // send hci packet
+        await this.sendPacket(this.createHciPacketFromFrame(frame));
 
+        // remember file sizes for calculating erase wait time
         this.sd_size = softdevice_size;
         this.total_size = softdevice_size + bootloader_size + app_size;
 
-        await new Promise((resolve, reject) => {
-            setTimeout(resolve, this.get_erase_wait_time() * 1000);
-        });
+        // wait for initial erase
+        await this.sleepMillis(this.getEraseWaitTime() * 1000);
 
     }
 
-    async send_init_packet(init_packet){
+    /**
+     * Sends the DFU Init packet to the device.
+     * @param initPacket
+     * @returns {Promise<void>}
+     */
+    async sendInitPacket(initPacket){
 
+        // create frame
         const frame = [
-            ...this.toBytesInt32(this.DFU_INIT_PACKET),
-            ...init_packet,
-            ...this.toBytesInt16(0x0000), // Padding required
+            ...this.int32ToBytes(this.DFU_INIT_PACKET),
+            ...initPacket,
+            ...this.int16ToBytes(0x0000), // padding required
         ];
 
-        await this.send_packet(this.frameToHciPacket(frame));
+        // send hci packet
+        await this.sendPacket(this.createHciPacketFromFrame(frame));
 
     }
 
-    async send_firmware(firmware) {
+    /**
+     * Sends the firmware file to the device in multiple chunks.
+     * @param firmware
+     * @returns {Promise<void>}
+     */
+    async sendFirmware(firmware) {
 
-        const frames = [];
+        const packets = [];
 
-        // seems to be chunking properly
+        // chunk firmware into separate packets
         for(let i = 0; i < firmware.length; i += this.DFU_PACKET_MAX_SIZE){
-            frames.push(this.frameToHciPacket([
-                ...this.toBytesInt32(this.DFU_DATA_PACKET),
+            packets.push(this.createHciPacketFromFrame([
+                ...this.int32ToBytes(this.DFU_DATA_PACKET),
                 ...firmware.slice(i, i + this.DFU_PACKET_MAX_SIZE),
             ]));
         }
 
-        // todo rename to packet?
-        for(var i = 0; i < frames.length; i++){
+        // send each packet one after the other
+        for(var i = 0; i < packets.length; i++){
 
-            const frame = frames[i];
+            // send packet
+            await this.sendPacket(packets[i]);
 
-            await this.send_packet(frame);
-
-            // wait a bit to allow device to write before sending next frame
-            await new Promise((resolve, reject) => {
-                setTimeout(resolve, this.FLASH_PAGE_WRITE_TIME * 1000);
-            });
+            // wait a bit to allow device to write before sending next packet
+            await this.sleepMillis(this.FLASH_PAGE_WRITE_TIME * 1000);
 
         }
 
-        // Wait for last page to write
-        await new Promise((resolve, reject) => {
-            setTimeout(resolve, this.FLASH_PAGE_WRITE_TIME * 1000);
-        });
-
-        // Send data stop packet
-        await this.send_packet(this.frameToHciPacket([
-            ...this.toBytesInt32(this.DFU_STOP_DATA_PACKET),
+        // finished sending firmware, send DFU Stop Data packet
+        await this.sendPacket(this.createHciPacketFromFrame([
+            ...this.int32ToBytes(this.DFU_STOP_DATA_PACKET),
         ]));
 
-    }
-
-    async send_validate_firmware() {
-        // no op for usb
-    }
-
-    async send_activate_firmware() {
-        // no op for usb
     }
 
     /**
@@ -355,8 +398,7 @@ class Nrf52DfuFlasher {
      * @param {number} pktLen - Packet length
      * @return {Uint8Array} - SLIP header
      */
-    // confirmed working
-    slipPartsToFourBytes(seq, dip, rp, pktType, pktLen) {
+    createSlipHeader(seq, dip, rp, pktType, pktLen) {
         let ints = [0, 0, 0, 0];
         ints[0] = seq | (((seq + 1) % 8) << 3) | (dip << 6) | (rp << 7);
         ints[1] = pktType | ((pktLen & 0x000F) << 4);
@@ -365,17 +407,12 @@ class Nrf52DfuFlasher {
         return new Uint8Array(ints);
     }
 
-    // confirmed working
-    create_image_size_packet(softdevice_size = 0, bootloader_size = 0, app_size = 0) {
-        return [
-            ...this.toBytesInt32(softdevice_size),
-            ...this.toBytesInt32(bootloader_size),
-            ...this.toBytesInt32(app_size),
-        ];
-    }
-
-    // confirmed working
-    toBytesInt32(num){
+    /**
+     * Converts the provided int32 to 4 bytes.
+     * @param num
+     * @returns {number[]}
+     */
+    int32ToBytes(num){
         return [
             (num & 0x000000ff),
             (num & 0x0000ff00) >> 8,
@@ -384,10 +421,14 @@ class Nrf52DfuFlasher {
         ];
     }
 
-    // confirmed working
-    toBytesInt16(num){
+    /**
+     * Converts the provided int16 to 2 bytes.
+     * @param num
+     * @returns {number[]}
+     */
+    int16ToBytes(num){
         return [
-            num & 0x00FF,
+            (num & 0x00FF),
             (num & 0xFF00) >> 8,
         ];
     }
