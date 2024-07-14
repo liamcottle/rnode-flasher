@@ -1,6 +1,6 @@
 # RNode Flasher
 
-A web based firmware flasher for [Reticulum](https://github.com/markqvist/Reticulum) and [RNode_Firmware](https://github.com/markqvist/RNode_Firmware).
+A web based firmware flasher for [Reticulum](https://github.com/markqvist/Reticulum) / [RNode_Firmware](https://github.com/markqvist/RNode_Firmware).
 
 - It is written in javascript and uses the [Web Serial APIs](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API).
 - It supports putting a device into DFU mode.
