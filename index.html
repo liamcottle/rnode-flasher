@@ -18,23 +18,41 @@
 </head>
 <body>
 
-<div id="app" class="space-y-1">
+<div id="app" class="space-y-2">
 
     <div>
-        <button @click="enterDfuMode" class="border px-2 bg-gray-100 hover:bg-gray-200 rounded">
+        <div>1. Put device into DFU Mode</div>
+        <button @click="enterDfuMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
             Enter DFU Mode
         </button>
     </div>
 
     <div>
-        <input ref="file" type="file"/>
-        <button @click="flash" class="border px-2 bg-gray-100 hover:bg-gray-200 rounded">
-            Flash
-        </button>
+
+        <div>2. Select firmware.zip to flash</div>
+        <div class="mb-1">
+            <input ref="file" type="file"/>
+        </div>
+
+        <div v-if="!isFlashing">
+            <button @click="flash" :disabled="isFlashing" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Flash Now
+            </button>
+        </div>
+
+        <div v-else>
+            <span v-if="progress > 0">Flashing: {{progress}}%</span>
+            <span v-else>Flashing: please wait...</span>
+            <div class="mt-1 w-[200px] overflow-hidden rounded-full bg-gray-200">
+                <div class="h-2 rounded-full bg-blue-600" :style="{ 'width': `${progress}%`}"></div>
+            </div>
+        </div>
+
     </div>
 
     <div>
-        <button @click="detect" class="border px-2 bg-gray-100 hover:bg-gray-200 rounded">
+        <div>3. After flashing, Detect RNode version</div>
+        <button @click="detect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
             Detect
         </button>
     </div>
@@ -45,7 +63,8 @@
     Vue.createApp({
         data() {
             return {
-
+                isFlashing: false,
+                progress: 0,
             };
         },
         mounted() {
@@ -94,8 +113,16 @@
                 }
 
                 // flash file
+                this.isFlashing = true;
+                this.progress = 0;
                 const flasher = new Nrf52DfuFlasher(serialPort);
-                await flasher.flash(file);
+                await flasher.flash(file, (percentage) => {
+                    this.progress = percentage;
+                    if(this.progress === 100){
+                        this.isFlashing = false;
+                        alert("Firmware has been flashed!");
+                    }
+                });
 
             },
             async detect() {

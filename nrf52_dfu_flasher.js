@@ -86,9 +86,10 @@ class Nrf52DfuFlasher {
     /**
      * Flashes the provided firmware zip.
      * @param firmwareZipBlob
+     * @param progressCallback
      * @returns {Promise<void>}
      */
-    async flash(firmwareZipBlob) {
+    async flash(firmwareZipBlob, progressCallback) {
 
         // read zip file
         const blobReader = new window.zip.BlobReader(firmwareZipBlob);
@@ -122,7 +123,7 @@ class Nrf52DfuFlasher {
 
         // flash application image
         if(manifest.application){
-            await this.dfuSendImage(this.HEX_TYPE_APPLICATION, zipEntries, manifest.application);
+            await this.dfuSendImage(this.HEX_TYPE_APPLICATION, zipEntries, manifest.application, progressCallback);
         }
 
     }
@@ -132,9 +133,10 @@ class Nrf52DfuFlasher {
      * @param programMode
      * @param zipEntries
      * @param firmwareManifest
+     * @param progressCallback
      * @returns {Promise<void>}
      */
-    async dfuSendImage(programMode, zipEntries, firmwareManifest) {
+    async dfuSendImage(programMode, zipEntries, firmwareManifest, progressCallback) {
 
         // open port
         await this.serialPort.open({
@@ -174,7 +176,7 @@ class Nrf52DfuFlasher {
         await this.sendInitPacket(init_packet);
 
         console.log("Sending firmware file")
-        await this.sendFirmware(firmware);
+        await this.sendFirmware(firmware, progressCallback);
 
         // close port
         console.log("Closing Port");
@@ -353,11 +355,13 @@ class Nrf52DfuFlasher {
     /**
      * Sends the firmware file to the device in multiple chunks.
      * @param firmware
+     * @param progressCallback
      * @returns {Promise<void>}
      */
-    async sendFirmware(firmware) {
+    async sendFirmware(firmware, progressCallback) {
 
         const packets = [];
+        var packetsSent = 0;
 
         // chunk firmware into separate packets
         for(let i = 0; i < firmware.length; i += this.DFU_PACKET_MAX_SIZE){
@@ -365,6 +369,11 @@ class Nrf52DfuFlasher {
                 ...this.int32ToBytes(this.DFU_DATA_PACKET),
                 ...firmware.slice(i, i + this.DFU_PACKET_MAX_SIZE),
             ]));
+        }
+
+        // send initial progress
+        if(progressCallback){
+            progressCallback(0);
         }
 
         // send each packet one after the other
@@ -376,12 +385,24 @@ class Nrf52DfuFlasher {
             // wait a bit to allow device to write before sending next packet
             await this.sleepMillis(this.FLASH_PAGE_WRITE_TIME * 1000);
 
+            // update progress
+            packetsSent++;
+            if(progressCallback){
+                const progress = Math.floor((packetsSent / packets.length) * 100);
+                progressCallback(progress);
+            }
+
         }
 
         // finished sending firmware, send DFU Stop Data packet
         await this.sendPacket(this.createHciPacketFromFrame([
             ...this.int32ToBytes(this.DFU_STOP_DATA_PACKET),
         ]));
+
+        // send final progress
+        if(progressCallback){
+            progressCallback(100);
+        }
 
     }
 
