@@ -47,3 +47,11 @@ The following list of devices are supported:
 ## License
 
 MIT
+
+## References
+
+- https://github.com/adafruit/Adafruit_nRF52_nrfutil
+- https://github.com/adafruit/Adafruit_nRF52_nrfutil/blob/master/nordicsemi/dfu/dfu_transport_serial.py
+- https://github.com/markqvist/RNode_Firmware/blob/master/RNode_Firmware.ino
+- https://github.com/markqvist/RNode_Firmware/blob/master/Framing.h
+- https://github.com/markqvist/RNode_Firmware/blob/master/Utilities.h
