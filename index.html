@@ -8,35 +8,44 @@
     <script src="./rnode.js"></script>
     <script src="./nrf52_dfu_flasher.js"></script>
     <script src="./zip.min.js"></script>
+
+    <!-- tailwind css -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+
+    <!-- vue js -->
     <script src="https://unpkg.com/vue@3"></script>
 
 </head>
 <body>
 
-<div id="app">
-    <button @click="connect">Connect</button>
-    <input ref="file" @change="onFileChange" type="file"/>
+<div id="app" class="space-y-1">
+
+    <div>
+        <button @click="enterDfuMode" class="border px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            Enter DFU Mode
+        </button>
+    </div>
+
+    <div>
+        <input ref="file" type="file"/>
+        <button @click="flash" class="border px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            Flash
+        </button>
+    </div>
+
 </div>
 
 <script>
     Vue.createApp({
         data() {
             return {
-                flasher: null,
+
             };
         },
         mounted() {
 
         },
         methods: {
-            async onFileChange() {
-
-                const file = this.$refs["file"].files[0];
-                console.log(file);
-
-                await this.flasher.flash(file);
-
-            },
             async connect() {
 
                 if(!navigator.serial){
@@ -50,6 +59,7 @@
                 });
 
                 this.flasher = new Nrf52DfuFlasher(serialPort);
+
                 // await this.flasher.enterDfuMode();
 
                 return;
@@ -151,6 +161,39 @@
                 // https://github.com/adafruit/Adafruit_nRF52_nrfutil/blob/master/nordicsemi/dfu/dfu_transport_serial.py#L49
                 // https://github.com/markqvist/Reticulum/discussions/471
 
+
+            },
+            async initFlasher() {
+
+                if(!navigator.serial){
+                    alert("Web Serial is not supported in this browser");
+                    return;
+                }
+
+                // ask user to select device
+                const serialPort = await navigator.serial.requestPort({
+                    filters: [],
+                });
+
+                return new Nrf52DfuFlasher(serialPort);
+
+            },
+            async enterDfuMode() {
+                const flasher = await this.initFlasher();
+                await flasher.enterDfuMode();
+            },
+            async flash() {
+
+                // ensure firmware file selected
+                const file = this.$refs["file"].files[0];
+                if(!file){
+                    alert("Select a firmware file first");
+                    return;
+                }
+
+                // flash file
+                const flasher = await this.initFlasher();
+                await flasher.flash(file);
 
             },
         },
