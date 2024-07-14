@@ -478,4 +478,237 @@ class RNode {
         ]);
     }
 
+    async getRomAsObject() {
+        const rom = await this.getRom();
+        return new ROM(rom);
+    }
+
+}
+
+class ROM {
+
+    static PLATFORM_AVR   = 0x90
+    static PLATFORM_ESP32 = 0x80
+    static PLATFORM_NRF52 = 0x70
+
+    static MCU_1284P      = 0x91
+    static MCU_2560       = 0x92
+    static MCU_ESP32      = 0x81
+    static MCU_NRF52      = 0x71
+
+    static PRODUCT_RAK4631 = 0x10
+    static MODEL_11       = 0x11
+    static MODEL_12       = 0x12
+
+    static PRODUCT_RNODE  = 0x03
+    static MODEL_A1       = 0xA1
+    static MODEL_A6       = 0xA6
+    static MODEL_A4       = 0xA4
+    static MODEL_A9       = 0xA9
+    static MODEL_A3       = 0xA3
+    static MODEL_A8       = 0xA8
+    static MODEL_A2       = 0xA2
+    static MODEL_A7       = 0xA7
+
+    static PRODUCT_T32_10 = 0xB2
+    static MODEL_BA       = 0xBA
+    static MODEL_BB       = 0xBB
+
+    static PRODUCT_T32_20 = 0xB0
+    static MODEL_B3       = 0xB3
+    static MODEL_B8       = 0xB8
+
+    static PRODUCT_T32_21 = 0xB1
+    static MODEL_B4       = 0xB4
+    static MODEL_B9       = 0xB9
+    static MODEL_B4_TCXO  = 0x04 // The TCXO model codes are only used here to select the
+    static MODEL_B9_TCXO  = 0x09 // correct firmware, actual model codes in firmware is still 0xB4 and 0xB9.
+
+    static PRODUCT_H32_V2 = 0xC0
+    static MODEL_C4       = 0xC4
+    static MODEL_C9       = 0xC9
+
+    static PRODUCT_H32_V3 = 0xC1
+    static MODEL_C5       = 0xC5
+    static MODEL_CA       = 0xCA
+
+    static PRODUCT_TBEAM  = 0xE0
+    static MODEL_E4       = 0xE4
+    static MODEL_E9       = 0xE9
+    static MODEL_E3       = 0xE3
+    static MODEL_E8       = 0xE8
+
+    static PRODUCT_HMBRW  = 0xF0
+    static MODEL_FF       = 0xFF
+    static MODEL_FE       = 0xFE
+
+    static ADDR_PRODUCT   = 0x00
+    static ADDR_MODEL     = 0x01
+    static ADDR_HW_REV    = 0x02
+    static ADDR_SERIAL    = 0x03
+    static ADDR_MADE      = 0x07
+    static ADDR_CHKSUM    = 0x0B
+    static ADDR_SIGNATURE = 0x1B
+    static ADDR_INFO_LOCK = 0x9B
+    static ADDR_CONF_SF   = 0x9C
+    static ADDR_CONF_CR   = 0x9D
+    static ADDR_CONF_TXP  = 0x9E
+    static ADDR_CONF_BW   = 0x9F
+    static ADDR_CONF_FREQ = 0xA3
+    static ADDR_CONF_OK   = 0xA7
+
+    static INFO_LOCK_BYTE = 0x73
+    static CONF_OK_BYTE   = 0x73
+
+    static BOARD_RNODE         = 0x31
+    static BOARD_HMBRW         = 0x32
+    static BOARD_TBEAM         = 0x33
+    static BOARD_HUZZAH32      = 0x34
+    static BOARD_GENERIC_ESP32 = 0x35
+    static BOARD_LORA32_V2_0   = 0x36
+    static BOARD_LORA32_V2_1   = 0x37
+    static BOARD_RAK4631       = 0x51
+
+    static MANUAL_FLASH_MODELS = [ROM.MODEL_A1, ROM.MODEL_A6]
+
+    constructor(eeprom) {
+        this.eeprom = eeprom;
+    }
+
+    getProduct() {
+        return this.eeprom[ROM.ADDR_PRODUCT];
+    }
+
+    getModel() {
+        return this.eeprom[ROM.ADDR_MODEL];
+    }
+
+    getHardwareRevision() {
+        return this.eeprom[ROM.ADDR_HW_REV];
+    }
+
+    getSerialNumber() {
+        return [
+            this.eeprom[ROM.ADDR_SERIAL],
+            this.eeprom[ROM.ADDR_SERIAL + 1],
+            this.eeprom[ROM.ADDR_SERIAL + 2],
+            this.eeprom[ROM.ADDR_SERIAL + 3],
+        ];
+    }
+
+    getMade() {
+        return [
+            this.eeprom[ROM.ADDR_MADE],
+            this.eeprom[ROM.ADDR_MADE + 1],
+            this.eeprom[ROM.ADDR_MADE + 2],
+            this.eeprom[ROM.ADDR_MADE + 3],
+        ];
+    }
+
+    getChecksum() {
+        const checksum = [];
+        for(var i = 0; i < 16; i++){
+            checksum.push(this.eeprom[ROM.ADDR_CHKSUM + i]);
+        }
+        return checksum;
+    }
+
+    getSignature() {
+        const signature = [];
+        for(var i = 0; i < 128; i++){
+            signature.push(this.eeprom[ROM.ADDR_SIGNATURE + i]);
+        }
+        return signature;
+    }
+
+    getCalculatedChecksum() {
+        return this.md5([
+            this.getProduct(),
+            this.getModel(),
+            this.getHardwareRevision(),
+            this.getSerialNumber(),
+            this.getMade(),
+        ]);
+    }
+
+    getConfiguredSpreadingFactor() {
+        return this.eeprom[ROM.ADDR_CONF_SF];
+    }
+
+    getConfiguredCodingRate() {
+        return this.eeprom[ROM.ADDR_CONF_CR];
+    }
+
+    getConfiguredTxPower() {
+        return this.eeprom[ROM.ADDR_CONF_TXP];
+    }
+
+    getConfiguredFrequency() {
+        return this.eeprom[ROM.ADDR_CONF_FREQ] << 24
+            | this.eeprom[ROM.ADDR_CONF_FREQ + 1] << 16
+            | this.eeprom[ROM.ADDR_CONF_FREQ + 2] << 8
+            | this.eeprom[ROM.ADDR_CONF_FREQ + 3];
+    }
+
+    getConfiguredBandwidth() {
+        return this.eeprom[ROM.ADDR_CONF_BW] << 24
+            | this.eeprom[ROM.ADDR_CONF_BW + 1] << 16
+            | this.eeprom[ROM.ADDR_CONF_BW + 2] << 8
+            | this.eeprom[ROM.ADDR_CONF_BW + 3];
+    }
+
+    isInfoLocked() {
+        return this.eeprom[ROM.ADDR_INFO_LOCK] === ROM.INFO_LOCK_BYTE;
+    }
+
+    isConfigured() {
+        return this.eeprom[ROM.ADDR_CONF_OK] === ROM.CONF_OK_BYTE;
+    }
+
+    md5(data) {
+        var bytes = [];
+        const hash = CryptoJS.MD5(data);
+        for(var i = 0; i < hash.sigBytes; i++){
+            bytes.push((hash.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff);
+        }
+        return bytes;
+    }
+
+    parse() {
+
+        // ensure info lock byte is set
+        if(!this.isInfoLocked()){
+            return null;
+        }
+
+        // parse expected details
+        var details = {
+            is_provisioned: true,
+            is_configured: this.isConfigured(),
+            product: this.getProduct(),
+            model: this.getModel(),
+            hardware_revision: this.getHardwareRevision(),
+            serial_number: this.getSerialNumber(),
+            made: this.getMade(),
+            checksum: this.getChecksum(),
+            signature: this.getSignature(),
+            calculated_checksum: this.getCalculatedChecksum(),
+        }
+
+        // if configured, add configuration to details
+        if(details.is_configured){
+            details = {
+                ...details,
+                configured_spreading_factor: this.getConfiguredSpreadingFactor(),
+                configured_coding_rate: this.getConfiguredCodingRate(),
+                configured_tx_power: this.getConfiguredTxPower(),
+                configured_frequency: this.getConfiguredFrequency(),
+                configured_bandwidth: this.getConfiguredBandwidth(),
+            };
+        }
+
+        return details;
+
+    }
+
 }
