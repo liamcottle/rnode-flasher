@@ -68,6 +68,13 @@
     </div>
 
     <div>
+        <div>5. Configure firmware hash (todo: TNC mode: frequency, bandwidth, tx power, spreading factor, coding rate)</div>
+        <button @click="configure" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            Configure
+        </button>
+    </div>
+
+    <div>
         <div>0. Extra Tools</div>
         <button @click="wipe" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
             Wipe EEPROM
@@ -334,6 +341,44 @@
                 await rnode.reset();
                 await rnode.close();
                 console.log("done");
+
+            },
+            async configure() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                console.log({
+                    firmware_hash: await rnode.getFirmwareHash(),
+                    target_firmware_hash: await rnode.getTargetFirmwareHash(),
+                });
+
+                // todo: this works, but we should be calculating the firmware hash from the file, and not giving the board what it already knows
+                await rnode.setFirmwareHash(await rnode.getFirmwareHash());
+                await Utils.sleepMillis(5000);
+
+                await rnode.reset();
+                await rnode.close();
 
             },
         },
