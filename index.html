@@ -23,126 +23,184 @@
 
 <div id="app" class="space-y-2 p-3">
 
-    <div class="border bg-gray-50 p-3 rounded">
+    <div class="border bg-gray-50 p-3 rounded shadow">
         <div class="font-bold">RNode Flasher</div>
         <div>Only RAK4631 is supported at this time.</div>
     </div>
 
-    <div class="border bg-gray-50 p-3 rounded">
-        <div class="mb-1">1. Put device into DFU Mode</div>
-        <button @click="enterDfuMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-            Enter DFU Mode
-        </button>
-    </div>
+    <div class="border bg-gray-50 rounded shadow">
 
-    <div class="border bg-gray-50 p-3 rounded">
-
-        <div class="mb-1">2. Select firmware.zip to flash</div>
-        <div class="mb-1">
-            <input ref="file" type="file"/>
+        <div class="border-b px-2 py-1">
+            1. Put device into DFU Mode
         </div>
 
-        <div v-if="!isFlashing">
-            <button @click="flash" :disabled="isFlashing" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                Flash Now
+        <div class="p-3">
+            <button @click="enterDfuMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Enter DFU Mode
             </button>
         </div>
 
-        <div v-else>
-            <span v-if="flashingProgress > 0">Flashing: {{flashingProgress}}%</span>
-            <span v-else>Flashing: please wait...</span>
-            <div class="mt-1 w-[200px] overflow-hidden rounded-full bg-gray-200">
-                <div class="h-2 rounded-full bg-blue-600" :style="{ 'width': `${flashingProgress}%`}"></div>
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            2. Select firmware to flash (.zip)
+        </div>
+
+        <div class="p-3">
+
+            <div class="mb-1">
+                <input ref="file" type="file"/>
+            </div>
+
+            <div v-if="!isFlashing">
+                <button @click="flash" :disabled="isFlashing" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Flash Now
+                </button>
+            </div>
+
+            <div v-else>
+                <span v-if="flashingProgress > 0">Flashing: {{flashingProgress}}%</span>
+                <span v-else>Flashing: please wait...</span>
+                <div class="mt-1 w-[200px] overflow-hidden rounded-full bg-gray-200">
+                    <div class="h-2 rounded-full bg-blue-600" :style="{ 'width': `${flashingProgress}%`}"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t px-2 py-1">
+            <div class="text-sm space-x-1">
+                <a target="_blank" href="https://github.com/markqvist/RNode_Firmware/releases" class="text-blue-500 hover:underline">Official Firmware</a>
+                <span>•</span>
+                <a target="_blank" href="https://github.com/liberatedsystems/RNode_Firmware_CE/releases" class="text-blue-500 hover:underline">CE Firmware</a>
+                <span>•</span>
+                <a target="_blank" href="https://github.com/attermann/microReticulum_Firmware/releases" class="text-blue-500 hover:underline">Transport Node Firmware</a>
             </div>
         </div>
 
     </div>
 
-    <div class="border bg-gray-50 p-3 rounded">
-        <div class="mb-1">3. Provision EEPROM with device info, checksum and signature.</div>
-        <div class="flex mb-1 space-x-1">
-            <div class="min-w-[70px] my-auto text-right">Product</div>
-            <select v-model="selectedProduct" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
-                <option :value="null" disabled>Select a Product</option>
-                <option v-for="product of products" :value="product">{{ product.name }}</option>
-            </select>
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            3. Provision EEPROM with device info, checksum and signature.
         </div>
-        <div class="flex mb-1 space-x-1">
-            <div class="min-w-[70px] my-auto text-right">Model</div>
-            <select v-model="selectedModel" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
-                <option :value="null" disabled>Select a Model</option>
-                <option v-if="selectedProduct" v-for="model of selectedProduct.models" :value="model">{{ model.name }}</option>
-            </select>
+
+        <div class="p-3">
+
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[70px] my-auto text-right">Product</div>
+                <select v-model="selectedProduct" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option :value="null" disabled>Select a Product</option>
+                    <option v-for="product of products" :value="product">{{ product.name }}</option>
+                </select>
+            </div>
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[70px] my-auto text-right">Model</div>
+                <select v-model="selectedModel" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option :value="null" disabled>Select a Model</option>
+                    <option v-if="selectedProduct" v-for="model of selectedProduct.models" :value="model">{{ model.name }}</option>
+                </select>
+            </div>
+            <div>
+                <button @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Provision
+                </button>
+            </div>
+
         </div>
-        <div>
-            <button @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                Provision
-            </button>
-        </div>
+
     </div>
 
-    <div class="border bg-gray-50 p-3 rounded">
-        <div class="mb-1">4. Set Firmware Hash, for now it uses what the board knows, will fix later.</div>
-        <button @click="setFirmwareHash" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-            Set Firmware Hash
-        </button>
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            4. Set Firmware Hash, for now it uses what the board knows, will fix later.
+        </div>
+
+        <div class="p-3">
+            <button @click="setFirmwareHash" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Set Firmware Hash
+            </button>
+        </div>
+
     </div>
 
-    <div class="border bg-gray-50 p-3 rounded">
-        <div class="mb-1">5. Configure TNC Mode</div>
-        <div class="flex mb-1 space-x-1">
-            <div class="min-w-[125px] my-auto text-right">Frequency (Hz)</div>
-            <input v-model="configFrequency" type="number" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2">
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            5. Configure TNC Mode
         </div>
-        <div class="flex mb-1 space-x-1">
-            <div class="min-w-[125px] my-auto text-right">Bandwidth</div>
-            <select v-model="configBandwidth" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
-                <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
-            </select>
+
+        <div class="p-3">
+
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[125px] my-auto text-right">Frequency (Hz)</div>
+                <input v-model="configFrequency" type="number" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2">
+            </div>
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[125px] my-auto text-right">Bandwidth</div>
+                <select v-model="configBandwidth" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
+                </select>
+            </div>
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[125px] my-auto text-right">Tx Power (dB)</div>
+                <input v-model="configTxPower" type="number" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2">
+            </div>
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[125px] my-auto text-right">Spreading Factor</div>
+                <select v-model="configSpreadingFactor" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option v-for="spreadingfactor in RNodeInterfaceDefaults.spreadingfactors" :value="spreadingfactor">{{ spreadingfactor }}</option>
+                </select>
+            </div>
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[125px] my-auto text-right">Coding Rate</div>
+                <select v-model="configCodingRate" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option v-for="codingrate in RNodeInterfaceDefaults.codingrates" :value="codingrate">{{ codingrate }}</option>
+                </select>
+            </div>
+            <div class="space-x-1">
+                <button @click="enableTncMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Enable
+                </button>
+                <button @click="disableTncMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Disable
+                </button>
+            </div>
+
         </div>
-        <div class="flex mb-1 space-x-1">
-            <div class="min-w-[125px] my-auto text-right">Tx Power (dB)</div>
-            <input v-model="configTxPower" type="number" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2">
-        </div>
-        <div class="flex mb-1 space-x-1">
-            <div class="min-w-[125px] my-auto text-right">Spreading Factor</div>
-            <select v-model="configSpreadingFactor" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
-                <option v-for="spreadingfactor in RNodeInterfaceDefaults.spreadingfactors" :value="spreadingfactor">{{ spreadingfactor }}</option>
-            </select>
-        </div>
-        <div class="flex mb-1 space-x-1">
-            <div class="min-w-[125px] my-auto text-right">Coding Rate</div>
-            <select v-model="configCodingRate" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
-                <option v-for="codingrate in RNodeInterfaceDefaults.codingrates" :value="codingrate">{{ codingrate }}</option>
-            </select>
-        </div>
-        <div class="space-x-1">
-            <button @click="enableTncMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                Enable
-            </button>
-            <button @click="disableTncMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                Disable
-            </button>
-        </div>
+
     </div>
 
-    <div class="border bg-gray-50 p-3 rounded">
-        <div class="mb-1">Extra Tools</div>
-        <div class="space-x-1">
-            <button @click="detect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                Detect RNode
-            </button>
-            <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                Reboot RNode
-            </button>
-            <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                Dump EEPROM
-            </button>
-            <button @click="wipeEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
-                Wipe EEPROM
-            </button>
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Extra Tools
         </div>
-        <div class="text-sm text-gray-500">EEPROM dumps are shown in dev tools console.</div>
+
+        <div class="p-3">
+
+            <div class="space-x-1">
+                <button @click="detect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Detect RNode
+                </button>
+                <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Reboot RNode
+                </button>
+                <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Dump EEPROM
+                </button>
+                <button @click="wipeEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
+                    Wipe EEPROM
+                </button>
+            </div>
+
+            <div class="text-sm text-gray-500">EEPROM dumps are shown in dev tools console.</div>
+
+        </div>
+
     </div>
 
 </div>
