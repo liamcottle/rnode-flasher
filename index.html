@@ -88,9 +88,14 @@
 
     <div class="border bg-gray-50 p-3 rounded">
         <div>Extra Tools</div>
-        <button @click="wipe" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
-            Wipe EEPROM
-        </button>
+        <div class="space-x-1">
+            <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
+                Dump EEPROM
+            </button>
+            <button @click="wipeEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
+                Wipe EEPROM
+            </button>
+        </div>
     </div>
 
 </div>
@@ -224,7 +229,35 @@
                 const view = new DataView(buffer);
                 return view.getUint32(0, false); // false for big-endian
             },
-            async wipe() {
+            async dumpEeprom() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // get rom
+                const eeprom = await rnode.getRom();
+                if(!eeprom){
+                    alert("Unable to retrieve eeprom!");
+                    return;
+                }
+
+                // done
+                console.log(Utils.bytesToHex(eeprom));
+                await rnode.close();
+
+            },
+            async wipeEeprom() {
 
                 // ask for serial port
                 const serialPort = await this.askForSerialPort();
@@ -309,16 +342,21 @@
                 // write device info to eeprom
                 console.log("writing device info");
                 await rnode.writeRom(ROM.ADDR_PRODUCT, product);
+                console.log(Utils.bytesToHex(await rnode.getRom()));
                 await rnode.writeRom(ROM.ADDR_MODEL, model);
+                console.log(Utils.bytesToHex(await rnode.getRom()));
                 await rnode.writeRom(ROM.ADDR_HW_REV, hardwareRevision);
+                console.log(Utils.bytesToHex(await rnode.getRom()));
                 await rnode.writeRom(ROM.ADDR_SERIAL, serialBytes[0]);
                 await rnode.writeRom(ROM.ADDR_SERIAL + 1, serialBytes[1]);
                 await rnode.writeRom(ROM.ADDR_SERIAL + 2, serialBytes[2]);
                 await rnode.writeRom(ROM.ADDR_SERIAL + 3, serialBytes[3]);
+                console.log(Utils.bytesToHex(await rnode.getRom()));
                 await rnode.writeRom(ROM.ADDR_MADE, timestampBytes[0]);
                 await rnode.writeRom(ROM.ADDR_MADE + 1, timestampBytes[1]);
                 await rnode.writeRom(ROM.ADDR_MADE + 2, timestampBytes[2]);
                 await rnode.writeRom(ROM.ADDR_MADE + 3, timestampBytes[3]);
+                console.log(Utils.bytesToHex(await rnode.getRom()));
                 console.log("writing device info: done");
 
                 // write checksum to eeprom
@@ -326,6 +364,7 @@
                 for(var i = 0; i < 16; i++){
                     await rnode.writeRom(ROM.ADDR_CHKSUM + i, checksum[i]);
                 }
+                console.log(Utils.bytesToHex(await rnode.getRom()));
                 console.log("writing checksum: done");
 
                 // write signature to eeprom
@@ -335,11 +374,13 @@
                     // await rnode.writeRom(ROM.ADDR_SIGNATURE + i, signature[i]);
                     await rnode.writeRom(ROM.ADDR_SIGNATURE + i, 0x00); // fixme: fake signature
                 }
+                console.log(Utils.bytesToHex(await rnode.getRom()));
                 console.log("writing signature: done");
 
                 // write info lock byte to eeprom
                 console.log("writing lock byte");
                 await rnode.writeRom(ROM.ADDR_INFO_LOCK, ROM.INFO_LOCK_BYTE);
+                console.log(Utils.bytesToHex(await rnode.getRom()));
                 console.log("writing lock byte: done");
 
                 // todo get partition hash from release.json OR directly from the firmware.bin
@@ -435,21 +476,30 @@
                     return;
                 }
 
-                // todo check if firmware hashes match, as config will not save if device has invalid target hash
+                // todo check if firmware hashes match, as config will not save if device has invalid target hash, because radio must be able to init
 
                 // configure
                 console.log("configuring");
                 await rnode.setFrequency(917375000);
-                await rnode.setBandwidth(125000);
-                await rnode.setTxPower(17);
+                await rnode.setBandwidth(500000);
+                await rnode.setTxPower(22);
                 await rnode.setSpreadingFactor(8);
                 await rnode.setCodingRate(5);
                 await rnode.setRadioStateOn();
-                await rnode.saveConfig();
                 console.log("configuring: done");
 
-                // wait a bit for eeprom writes to complete
-                await Utils.sleepMillis(10000);
+                // save config
+                // fixme: for some reason, sending saveConfig ONCE doesn't write the entire config to eeprom...???
+                // fixme: when calling saveConfig once, it seems to miss the last 2 bytes of frequency, and doesn't set the conf ok byte...
+                // fixme: however, it seems to save it correctly if I send the CMD_CONF_SAVE more than once...
+                // fixme: note that sending the CMD_CONF_SAVE once in the python implementation seems to work fine, just not here...
+                console.log("saving config");
+                await Utils.sleepMillis(500);
+                await rnode.saveConfig();
+                await rnode.saveConfig();
+                console.log("saving config: done");
+
+                await Utils.sleepMillis(5000);
 
                 // done
                 await rnode.reset();
@@ -482,7 +532,7 @@
                     return;
                 }
 
-                // todo check if firmware hashes match, as config will not save if device has invalid target hash
+                // todo check if firmware hashes match, as config will not save if device has invalid target hash, because radio must be able to init
 
                 // configure
                 console.log("disabling tnc mode");
