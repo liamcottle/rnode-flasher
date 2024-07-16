@@ -89,7 +89,10 @@
     <div class="border bg-gray-50 p-3 rounded">
         <div>Extra Tools</div>
         <div class="space-x-1">
-            <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
+            <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Reboot
+            </button>
+            <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Dump EEPROM
             </button>
             <button @click="wipeEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
@@ -228,6 +231,30 @@
                 const buffer = new Uint8Array(byteArray).buffer; // Get the underlying ArrayBuffer from the byte array
                 const view = new DataView(buffer);
                 return view.getUint32(0, false); // false for big-endian
+            },
+            async reboot() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // reboot
+                await rnode.reset();
+                await rnode.close();
+
+                // done
+                alert("Board is rebooting!");
+
             },
             async dumpEeprom() {
 
