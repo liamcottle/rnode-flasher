@@ -76,9 +76,14 @@
 
     <div>
         <div>6. Configure TNC mode: frequency, bandwidth, tx power, spreading factor, coding rate</div>
-        <button @click="configure" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-            Configure
-        </button>
+        <div class="space-x-1">
+            <button @click="enableTncMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Enable
+            </button>
+            <button @click="disableTncMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Disable
+            </button>
+        </div>
     </div>
 
     <div>
@@ -404,7 +409,7 @@
                 alert("firmware hash has been set!");
 
             },
-            async configure() {
+            async enableTncMode() {
 
                 // ask for serial port
                 const serialPort = await this.askForSerialPort();
@@ -448,7 +453,48 @@
                 // done
                 await rnode.reset();
                 await rnode.close();
-                alert("Device has been configured!");
+                alert("TNC mode has been enabled!");
+
+            },
+            async disableTncMode() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // todo check if firmware hashes match, as config will not save if device has invalid target hash
+
+                // configure
+                console.log("disabling tnc mode");
+                await rnode.deleteConfig();
+                console.log("disabling tnc mode: done");
+
+                // wait a bit for eeprom writes to complete
+                await Utils.sleepMillis(5000);
+
+                // done
+                await rnode.reset();
+                await rnode.close();
+                alert("TNC mode has been disabled!");
 
             },
         },
