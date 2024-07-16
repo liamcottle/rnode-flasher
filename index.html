@@ -60,9 +60,25 @@
 
     <div class="border bg-gray-50 p-3 rounded">
         <div>3. Provision EEPROM with device info, checksum and signature.</div>
-        <button @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-            Provision
-        </button>
+        <div class="flex mb-1 space-x-1">
+            <div class="min-w-[70px] my-auto text-right">Product</div>
+            <select v-model="selectedProduct" class="min-w-[200px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                <option :value="null" disabled>Select a Product</option>
+                <option v-for="product of products" :value="product">{{ product.name }}</option>
+            </select>
+        </div>
+        <div class="flex mb-1 space-x-1">
+            <div class="min-w-[70px] my-auto text-right">Model</div>
+            <select v-model="selectedModel" class="min-w-[200px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                <option :value="null" disabled>Select a Model</option>
+                <option v-if="selectedProduct" v-for="model of selectedProduct.models" :value="model">{{ model.name }}</option>
+            </select>
+        </div>
+        <div>
+            <button @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Provision
+            </button>
+        </div>
     </div>
 
     <div class="border bg-gray-50 p-3 rounded">
@@ -111,6 +127,34 @@
             return {
                 isFlashing: false,
                 flashingProgress: 0,
+
+                selectedProduct: null,
+                selectedModel: null,
+                products: [
+                    {
+                        name: "RAK4631",
+                        id: ROM.PRODUCT_RAK4631,
+                        models: [
+                            {
+                                id: ROM.MODEL_11,
+                                name: "433 MHz",
+                            },
+                            {
+                                id: ROM.MODEL_12,
+                                name: "868 MHz",
+                            },
+                            {
+                                id: ROM.MODEL_12,
+                                name: "915 MHz",
+                            },
+                            {
+                                id: ROM.MODEL_12,
+                                name: "923 MHz",
+                            },
+                        ],
+                    },
+                ],
+
             };
         },
         mounted() {
@@ -333,6 +377,7 @@
                 const isRNode = await rnode.detect();
                 if(!isRNode){
                     alert("Selected device is not an RNode!");
+                    await rnode.close();
                     return;
                 }
 
@@ -345,12 +390,26 @@
                     return;
                 }
 
+                // ensure user has selected product
+                if(!this.selectedProduct){
+                    alert("Please select a product!");
+                    await rnode.close();
+                    return;
+                }
+
+                // ensure user has selected model
+                if(!this.selectedModel){
+                    alert("Please select a model!");
+                    await rnode.close();
+                    return;
+                }
+
                 console.log("device is not provisioned yet, doing it now...");
 
                 // determine device info
                 // todo implement ui to configure these values
-                const product = ROM.PRODUCT_RAK4631;
-                const model = ROM.MODEL_12;
+                const product = this.selectedProduct.id;
+                const model = this.selectedModel.id;
                 const hardwareRevision = 0x1;
                 const serialNumber = 1;
                 const timestampInSeconds = Math.floor(Date.now() / 1000);
