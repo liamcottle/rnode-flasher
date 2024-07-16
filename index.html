@@ -62,14 +62,14 @@
         <div>3. Provision EEPROM with device info, checksum and signature.</div>
         <div class="flex mb-1 space-x-1">
             <div class="min-w-[70px] my-auto text-right">Product</div>
-            <select v-model="selectedProduct" class="min-w-[200px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+            <select v-model="selectedProduct" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
                 <option :value="null" disabled>Select a Product</option>
                 <option v-for="product of products" :value="product">{{ product.name }}</option>
             </select>
         </div>
         <div class="flex mb-1 space-x-1">
             <div class="min-w-[70px] my-auto text-right">Model</div>
-            <select v-model="selectedModel" class="min-w-[200px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+            <select v-model="selectedModel" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
                 <option :value="null" disabled>Select a Model</option>
                 <option v-if="selectedProduct" v-for="model of selectedProduct.models" :value="model">{{ model.name }}</option>
             </select>
@@ -141,15 +141,7 @@
                             },
                             {
                                 id: ROM.MODEL_12,
-                                name: "868 MHz",
-                            },
-                            {
-                                id: ROM.MODEL_12,
-                                name: "915 MHz",
-                            },
-                            {
-                                id: ROM.MODEL_12,
-                                name: "923 MHz",
+                                name: "868 MHz / 915 MHz / 923 MHz",
                             },
                         ],
                     },
