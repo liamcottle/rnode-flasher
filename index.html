@@ -24,6 +24,11 @@
 <div id="app" class="space-y-2 p-3">
 
     <div class="border bg-gray-50 p-3 rounded">
+        <div class="font-bold">RNode Flasher</div>
+        <div>Only RAK4631 is supported at this time.</div>
+    </div>
+
+    <div class="border bg-gray-50 p-3 rounded">
         <div>1. Put device into DFU Mode</div>
         <button @click="enterDfuMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
             Enter DFU Mode
@@ -54,28 +59,21 @@
     </div>
 
     <div class="border bg-gray-50 p-3 rounded">
-        <div>3. After flashing, Detect RNode version</div>
-        <button @click="detect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-            Detect
-        </button>
-    </div>
-
-    <div class="border bg-gray-50 p-3 rounded">
-        <div>4. Provision eeprom with device info, checksum and signature.</div>
+        <div>3. Provision eeprom with device info, checksum and signature.</div>
         <button @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
             Provision
         </button>
     </div>
 
     <div class="border bg-gray-50 p-3 rounded">
-        <div>5. Set Firmware Hash, for now it uses what the board knows, will fix later.</div>
+        <div>4. Set Firmware Hash, for now it uses what the board knows, will fix later.</div>
         <button @click="setFirmwareHash" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
             Set Firmware Hash
         </button>
     </div>
 
     <div class="border bg-gray-50 p-3 rounded">
-        <div>6. Configure TNC mode: frequency, bandwidth, tx power, spreading factor, coding rate</div>
+        <div>5. Configure TNC mode: frequency, bandwidth, tx power, spreading factor, coding rate</div>
         <div class="space-x-1">
             <button @click="enableTncMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Enable
@@ -89,8 +87,11 @@
     <div class="border bg-gray-50 p-3 rounded">
         <div>Extra Tools</div>
         <div class="space-x-1">
+            <button @click="detect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Detect RNode
+            </button>
             <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                Reboot
+                Reboot RNode
             </button>
             <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Dump EEPROM
@@ -99,6 +100,7 @@
                 Wipe EEPROM
             </button>
         </div>
+        <div class="text-sm text-gray-500">EEPROM dumps are shown in dev tools console.</div>
     </div>
 
 </div>
@@ -196,7 +198,7 @@
                 }
 
                 const firmwareVersion = await rnode.getFirmwareVersion();
-                alert("RNode has firmware v" + firmwareVersion);
+                alert("Device has RNode firmware v" + firmwareVersion);
 
                 console.log({
                     firmware_version: await rnode.getFirmwareVersion(),
