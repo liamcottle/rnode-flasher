@@ -202,7 +202,7 @@ class RNode {
             }
         }
 
-        console.log('Received KISS frame data:', new Uint8Array(data));
+        //console.log('Received KISS frame data:', new Uint8Array(data));
         return data;
 
     }
