@@ -68,7 +68,14 @@
     </div>
 
     <div>
-        <div>5. Configure firmware hash (todo: TNC mode: frequency, bandwidth, tx power, spreading factor, coding rate)</div>
+        <div>5. Set Firmware Hash, for now it uses what the board knows, will fix later.</div>
+        <button @click="setFirmwareHash" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            Set Firmware Hash
+        </button>
+    </div>
+
+    <div>
+        <div>6. Configure TNC mode: frequency, bandwidth, tx power, spreading factor, coding rate</div>
         <button @click="configure" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
             Configure
         </button>
@@ -337,10 +344,64 @@
                 // RNS.log("Setting firmware checksum...")
                 // rnode.set_firmware_hash(partition_hash)
 
+                // wait a bit for eeprom writes to complete
+                await Utils.sleepMillis(5000);
+
                 // done
                 await rnode.reset();
                 await rnode.close();
-                console.log("done");
+
+                alert("device has been provisioned!");
+
+            },
+            async setFirmwareHash() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // log old hashes
+                console.log({
+                    old_firmware_hash: await rnode.getFirmwareHash(),
+                    old_target_firmware_hash: await rnode.getTargetFirmwareHash(),
+                });
+
+                // todo: this works, but we should be calculating the firmware hash from the file, and not giving the board what it already knows
+                await rnode.setFirmwareHash(await rnode.getFirmwareHash());
+
+                // wait a bit for eeprom writes to complete
+                await Utils.sleepMillis(5000);
+
+                // log new hashes
+                console.log({
+                    new_firmware_hash: await rnode.getFirmwareHash(),
+                    new_target_firmware_hash: await rnode.getTargetFirmwareHash(),
+                });
+
+                // done
+                await rnode.reset();
+                await rnode.close();
+
+                alert("firmware hash has been set!");
 
             },
             async configure() {
@@ -368,17 +429,26 @@
                     return;
                 }
 
-                console.log({
-                    firmware_hash: await rnode.getFirmwareHash(),
-                    target_firmware_hash: await rnode.getTargetFirmwareHash(),
-                });
+                // todo check if firmware hashes match, as config will not save if device has invalid target hash
 
-                // todo: this works, but we should be calculating the firmware hash from the file, and not giving the board what it already knows
-                await rnode.setFirmwareHash(await rnode.getFirmwareHash());
-                await Utils.sleepMillis(5000);
+                // configure
+                console.log("configuring");
+                await rnode.setFrequency(917375000);
+                await rnode.setBandwidth(125000);
+                await rnode.setTxPower(17);
+                await rnode.setSpreadingFactor(8);
+                await rnode.setCodingRate(5);
+                await rnode.setRadioStateOn();
+                await rnode.saveConfig();
+                console.log("configuring: done");
 
+                // wait a bit for eeprom writes to complete
+                await Utils.sleepMillis(10000);
+
+                // done
                 await rnode.reset();
                 await rnode.close();
+                alert("Device has been configured!");
 
             },
         },
