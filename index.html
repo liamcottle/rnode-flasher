@@ -636,7 +636,9 @@
                 }
 
                 // todo: this works, but we should be calculating the firmware hash from the file, and not giving the board what it already knows
+                console.log("setting firmware hash");
                 await rnode.setFirmwareHash(await rnode.getFirmwareHash());
+                console.log("setting firmware hash: done");
 
                 // wait a bit for eeprom writes to complete
                 await Utils.sleepMillis(5000);
