@@ -252,6 +252,28 @@
                             },
                         ],
                     },
+                    {
+                        name: "LilyGO T-Beam",
+                        id: ROM.PRODUCT_TBEAM,
+                        models: [
+                            {
+                                id: ROM.MODEL_E4,
+                                name: "433 MHz (with SX1278 chip)",
+                            },
+                            {
+                                id: ROM.MODEL_E9,
+                                name: "868/915/923 MHz (with SX1276 chip)",
+                            },
+                            {
+                                id: ROM.MODEL_E3,
+                                name: "433 MHz (with SX1268 chip)",
+                            },
+                            {
+                                id: ROM.MODEL_E8,
+                                name: "868/915/923 MHz (with SX1262 chip)",
+                            },
+                        ],
+                    },
                 ],
 
                 // Liam's default config for New Zealand / LongFast on Slot 10
@@ -613,6 +635,59 @@
                 // todo set firmware hash in eeprom
                 // RNS.log("Setting firmware checksum...")
                 // rnode.set_firmware_hash(partition_hash)
+
+                // RNS.log("Generating a new device signing key...")
+                // device_signer = RNS.Identity()
+                // device_signer.to_file(FWD_DIR+"/device.key")
+                // RNS.log("Device signing key written to "+str(FWD_DIR+"/device.key"))
+
+                // if not os.path.isfile(FWD_DIR+"/signing.key"):
+                // RNS.log("Generating a new EEPROM signing key...")
+                // private_key = rsa.generate_private_key(
+                //     public_exponent=65537,
+                //     key_size=1024,
+                //     backend=default_backend()
+                // )
+                // private_bytes = private_key.private_bytes(
+                //     encoding=serialization.Encoding.DER,
+                //     format=serialization.PrivateFormat.PKCS8,
+                //     encryption_algorithm=serialization.NoEncryption()
+                // )
+                // public_key = private_key.public_key()
+                // public_bytes = public_key.public_bytes(
+                //     encoding=serialization.Encoding.DER,
+                //     format=serialization.PublicFormat.SubjectPublicKeyInfo
+                // )
+
+                // can get partition hash from releases.json
+                // partition_hash = bytes.fromhex(release_info.split()[1])
+
+                // await rnode.indicateFirmwareUpdate();
+                // await rnode.setFirmwareHash(partition_hash);
+
+                // todo get signing.key
+
+                // file = open(key_path, "rb")
+                // private_bytes = file.read()
+                // file.close()
+                // private_key = serialization.load_der_private_key(
+                //     private_bytes,
+                //     password=None,
+                //     backend=default_backend()
+                // )
+                // public_key = private_key.public_key()
+                // public_bytes = public_key.public_bytes(
+                //     encoding=serialization.Encoding.DER,
+                //     format=serialization.PublicFormat.SubjectPublicKeyInfo
+                // )
+                // signature = private_key.sign(
+                //     checksum,
+                //     padding.PSS(
+                //         mgf=padding.MGF1(hashes.SHA256()),
+                //         salt_length=padding.PSS.MAX_LENGTH
+                //     ),
+                //     hashes.SHA256()
+                // )
 
                 // wait a bit for eeprom writes to complete
                 await Utils.sleepMillis(5000);
