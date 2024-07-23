@@ -77,6 +77,7 @@ Once the firmware is flashed to the device, you will need to provision the EEPRO
 - support flashing existing firmware files from api
 - calculate on air bitrate based on tnc settings
 - try using [web-serial-polyfill](https://github.com/google/web-serial-polyfill) to support flashing from Android device?
+- try using [esptool-js](https://github.com/espressif/esptool-js) for flashing ESP32 boards
 
 ## License
 
