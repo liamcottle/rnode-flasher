@@ -76,6 +76,7 @@ Once the firmware is flashed to the device, you will need to provision the EEPRO
 - support other devices, such as ESP32/Heltec V3
 - support flashing existing firmware files from api
 - calculate on air bitrate based on tnc settings
+- try using [web-serial-polyfill](https://github.com/google/web-serial-polyfill) to support flashing from Android device?
 
 ## License
 
