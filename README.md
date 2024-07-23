@@ -75,6 +75,7 @@ Once the firmware is flashed to the device, you will need to provision the EEPRO
 - support configuring tnc mode, also useful for the [transport node firmware](https://github.com/attermann/microReticulum_Firmware/commits/transport_node/)
 - support other devices, such as ESP32/Heltec V3
 - support flashing existing firmware files from api
+- calculate on air bitrate based on tnc settings
 
 ## License
 
