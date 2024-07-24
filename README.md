@@ -20,7 +20,7 @@ Generally, you would use the following command to flash a firmware.zip to your d
 adafruit-nrfutil dfu serial --package firmware.zip -p /dev/cu.usbmodem14401 -b 115200 -t 1200
 ```
 
-The [nrf52_dfu_flasher.js](./nrf52_dfu_flasher.js) in this project implements a javascript, web based version of the above command.
+The [nrf52_dfu_flasher.js](js/nrf52_dfu_flasher.js) in this project implements a javascript, web based version of the above command.
 
 There was an existing package called [pc-nrf-dfu-js](https://github.com/NordicSemiconductor/pc-nrf-dfu-js), however this repo had been archived and didn't appear to support the latest DFU protocol.
 

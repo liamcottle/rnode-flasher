@@ -8,18 +8,18 @@
 
     <title>RNode Flasher</title>
 
-    <script src="./rnode.js"></script>
-    <script src="./nrf52_dfu_flasher.js"></script>
-    <script src="./zip.min.js"></script>
+    <script src="./js/rnode.js"></script>
+    <script src="./js/nrf52_dfu_flasher.js"></script>
+    <script src="./js/zip.min.js"></script>
 
     <!-- tailwind css -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script src="./js/tailwindcss/tailwind-v3.4.3-forms-v0.5.7.js"></script>
 
     <!-- vue js -->
-    <script src="https://unpkg.com/vue@3"></script>
+    <script src="./js/vue@3.4.26/dist/vue.global.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/core.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/md5.js"></script>
+    <script src="./js/crypto-js@3.9.1-1/core.js"></script>
+    <script src="./js/crypto-js@3.9.1-1/md5.js"></script>
 
 </head>
 <body class="bg-slate-300">
@@ -226,7 +226,7 @@
 
 <!-- setup esptool-js -->
 <script type="module">
-    import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.4.5/bundle.js";
+    import { ESPLoader, Transport } from "./js/esptool-js@0.4.5/bundle.js";
     window.ESPLoader = ESPLoader;
     window.Transport = Transport;
 </script>
