@@ -3,10 +3,10 @@
 A _work-in-progress_ web based firmware flasher for [Reticulum](https://github.com/markqvist/Reticulum) / [RNode_Firmware](https://github.com/markqvist/RNode_Firmware).
 
 - It is written in javascript and uses the [Web Serial APIs](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API).
-- It supports putting a device into DFU mode.
-- It supports flashing `application` firmware from a zip file.
+- It supports putting relevant devices into DFU mode.
+- It supports flashing firmware from a zip file.
 
-At this time, it does not support flashing bootloaders or softdevices.
+At this time, it does not support flashing bootloaders or softdevices for the nRF boards.
 
 ## How does it work?
 
@@ -27,6 +27,7 @@ There was an existing package called [pc-nrf-dfu-js](https://github.com/NordicSe
 ## How to use it?
 
 - Open [index.html](./index.html) in your web browser.
+- Select your device.
 - Put your device into DFU mode.
 - Select a firmware file and click flash.
 - Your device should reboot into the new firmware.
@@ -38,6 +39,7 @@ There was an existing package called [pc-nrf-dfu-js](https://github.com/NordicSe
 The following list of devices are supported:
 
 - RAK4631
+- Heltec v3
 
 ## What is needed to set up a new RNode?
 
@@ -72,13 +74,9 @@ Once the firmware is flashed to the device, you will need to provision the EEPRO
 ## TODO
 
 - support configuring eeprom with device signatures and firmware hashes
-- support configuring tnc mode, also useful for the [transport node firmware](https://github.com/attermann/microReticulum_Firmware/commits/transport_node/)
-- support other devices, such as ESP32/Heltec V3
 - support flashing existing firmware files from api
 - calculate on air bitrate based on tnc settings
 - try using [web-serial-polyfill](https://github.com/google/web-serial-polyfill) to support flashing from Android device?
-- try using [esptool-js](https://github.com/espressif/esptool-js) for flashing ESP32 boards
-- host all scripts, cryptojs, vuejs, tailwindcss etc locally to support offline use of flasher
 
 ## License
 
