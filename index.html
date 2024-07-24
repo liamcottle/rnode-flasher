@@ -26,6 +26,7 @@
 
 <div id="app" class="space-y-2 p-3">
 
+    <!-- header -->
     <div class="flex border bg-gray-50 p-3 rounded shadow">
         <div class="mr-3">
             <img src="reticulum_logo_512.png" class="w-14 h-14"/>
@@ -39,13 +40,41 @@
     <div class="border bg-gray-50 rounded shadow">
 
         <div class="border-b px-2 py-1">
-            1. Put device into DFU Mode
+            1. Select your device
         </div>
 
         <div class="p-3">
+
+            <div class="flex mb-1 space-x-1">
+                <div class="min-w-[70px] my-auto text-right">Product</div>
+                <select v-model="selectedProduct" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option :value="null" disabled>Select a Product</option>
+                    <option v-for="product of products" :value="product">{{ product.name }}</option>
+                </select>
+            </div>
+
+            <div class="flex space-x-1">
+                <div class="min-w-[70px] my-auto text-right">Model</div>
+                <select v-model="selectedModel" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                    <option :value="null" disabled>Select a Model</option>
+                    <option v-if="selectedProduct" v-for="model of selectedProduct.models" :value="model">{{ model.name }}</option>
+                </select>
+            </div>
+
+        </div>
+
+        <!-- button to enter dfu mode on PLATFORM_NRF52 -->
+        <div v-if="selectedProduct?.platform === 0x70" class="p-3 border-t">
             <button @click="enterDfuMode" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Enter DFU Mode
             </button>
+        </div>
+
+        <div class="border-t px-2 py-1">
+            <div class="text-sm space-x-1">
+                <span>Can't find your device? Open an issue on</span>
+                <a target="_blank" href="https://github.com/liamcottle/rnode-flasher" class="text-blue-500 hover:underline">GitHub</a>
+            </div>
         </div>
 
     </div>
@@ -58,18 +87,11 @@
 
         <div class="p-3">
 
-            <div class="flex mb-2">
-                <div class="text-sm bg-red-100 px-2 py-1 border rounded">
-                    <span class="text-red-500">*</span>
-                    <span>Only RAK4631 can be flashed at this time, ESP32 support is coming later.</span>
-                </div>
-            </div>
-
             <div class="mb-2">
                 <input ref="file" type="file"/>
             </div>
 
-            <div v-if="!isFlashing">
+            <div v-if="!isFlashing" class="space-x-1">
                 <button @click="flash" :disabled="isFlashing" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     Flash Now
                 </button>
@@ -103,27 +125,9 @@
         </div>
 
         <div class="p-3">
-
-            <div class="flex mb-1 space-x-1">
-                <div class="min-w-[70px] my-auto text-right">Product</div>
-                <select v-model="selectedProduct" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
-                    <option :value="null" disabled>Select a Product</option>
-                    <option v-for="product of products" :value="product">{{ product.name }}</option>
-                </select>
-            </div>
-            <div class="flex mb-1 space-x-1">
-                <div class="min-w-[70px] my-auto text-right">Model</div>
-                <select v-model="selectedModel" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
-                    <option :value="null" disabled>Select a Model</option>
-                    <option v-if="selectedProduct" v-for="model of selectedProduct.models" :value="model">{{ model.name }}</option>
-                </select>
-            </div>
-            <div>
-                <button @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Provision
-                </button>
-            </div>
-
+            <button @click="provision" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Provision
+            </button>
         </div>
 
     </div>
@@ -220,6 +224,13 @@
 
 </div>
 
+<!-- setup esptool-js -->
+<script type="module">
+    import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.4.5/bundle.js";
+    window.ESPLoader = ESPLoader;
+    window.Transport = Transport;
+</script>
+
 <script>
     Vue.createApp({
         data() {
@@ -232,8 +243,33 @@
                 selectedModel: null,
                 products: [
                     {
+                        name: "Heltec LoRa32 v3",
+                        id: ROM.PRODUCT_H32_V3,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_C5,
+                                name: "433 MHz",
+                            },
+                            {
+                                id: ROM.MODEL_CA,
+                                name: "868 MHz / 915 MHz / 923 MHz",
+                            },
+                        ],
+                        flash_config: {
+                            flash_size: "8MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_heltec32v3.boot_app0",
+                                "0x0": "rnode_firmware_heltec32v3.bootloader",
+                                "0x10000": "rnode_firmware_heltec32v3.bin",
+                                "0x8000": "rnode_firmware_heltec32v3.partitions",
+                            },
+                        },
+                    },
+                    {
                         name: "RAK4631",
                         id: ROM.PRODUCT_RAK4631,
+                        platform: ROM.PLATFORM_NRF52,
                         models: [
                             {
                                 id: ROM.MODEL_11,
@@ -246,38 +282,65 @@
                         ],
                     },
                     {
-                        name: "Heltec LoRa32 v3",
-                        id: ROM.PRODUCT_H32_V3,
-                        models: [
-                            {
-                                id: ROM.MODEL_C5,
-                                name: "433 MHz",
-                            },
-                            {
-                                id: ROM.MODEL_CA,
-                                name: "868 MHz / 915 MHz / 923 MHz",
-                            },
-                        ],
-                    },
-                    {
                         name: "LilyGO T-Beam",
                         id: ROM.PRODUCT_TBEAM,
+                        platform: ROM.PLATFORM_ESP32,
                         models: [
                             {
                                 id: ROM.MODEL_E4,
                                 name: "433 MHz (with SX1278 chip)",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_tbeam.boot_app0",
+                                        "0x1000": "rnode_firmware_tbeam.bootloader",
+                                        "0x10000": "rnode_firmware_tbeam.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_tbeam.partitions",
+                                    },
+                                },
                             },
                             {
                                 id: ROM.MODEL_E9,
                                 name: "868/915/923 MHz (with SX1276 chip)",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_tbeam.boot_app0",
+                                        "0x1000": "rnode_firmware_tbeam.bootloader",
+                                        "0x10000": "rnode_firmware_tbeam.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_tbeam.partitions",
+                                    },
+                                },
                             },
                             {
                                 id: ROM.MODEL_E3,
                                 name: "433 MHz (with SX1268 chip)",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_tbeam_sx1262.boot_app0",
+                                        "0x1000": "rnode_firmware_tbeam_sx1262.bootloader",
+                                        "0x10000": "rnode_firmware_tbeam_sx1262.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_tbeam_sx1262.partitions",
+                                    },
+                                },
                             },
                             {
                                 id: ROM.MODEL_E8,
                                 name: "868/915/923 MHz (with SX1262 chip)",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_tbeam_sx1262.boot_app0",
+                                        "0x1000": "rnode_firmware_tbeam_sx1262.bootloader",
+                                        "0x10000": "rnode_firmware_tbeam_sx1262.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_tbeam_sx1262.partitions",
+                                    },
+                                },
                             },
                         ],
                     },
@@ -352,6 +415,22 @@
 
             },
             async flash() {
+                switch(this.selectedProduct?.platform){
+                    case ROM.PLATFORM_ESP32: {
+                        await this.flashEsp32();
+                        break;
+                    }
+                    case ROM.PLATFORM_NRF52: {
+                        await this.flashNrf52();
+                        break;
+                    }
+                    default: {
+                        alert("Please select a device first");
+                        break;
+                    }
+                }
+            },
+            async flashNrf52() {
 
                 // ensure firmware file selected
                 const file = this.$refs["file"].files[0];
@@ -387,6 +466,129 @@
                 } finally {
                     this.isFlashing = false;
                 }
+
+                // close port
+                console.log("Closing serial port");
+                await this.serialPort.close();
+
+            },
+            async flashEsp32() {
+
+                // ensure ESPLoader is available
+                if(!window.ESPLoader){
+                    alert("esptool-js could not be loaded.");
+                    return;
+                }
+
+                // ensure flash config is known, use from selected model, or fallback to selected product
+                const flashConfig = this.selectedModel?.flash_config ?? this.selectedProduct?.flash_config;
+                if(!flashConfig){
+                    alert("Flash config is not available for the selected device.");
+                    return;
+                }
+
+                // ensure firmware file selected
+                const file = this.$refs["file"].files[0];
+                if(!file){
+                    alert("Select a firmware file first");
+                    return;
+                }
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // update progress
+                this.isFlashing = true;
+                this.flashingProgress = 0;
+
+                try {
+
+                    // read zip file
+                    const blobReader = new window.zip.BlobReader(file);
+                    const zipReader = new window.zip.ZipReader(blobReader);
+                    const zipEntries = await zipReader.getEntries();
+
+                    // get files to flash
+                    const filesToFlash = [];
+                    for(const [address, filename] of Object.entries(flashConfig.flash_files)){
+
+                        // find file inside zip
+                        const file = zipEntries.find((zipEntry) => zipEntry.filename === filename);
+                        if(!file){
+                            throw filename + " not found in firmware file!";
+                        }
+
+                        // get file data as binary string
+                        const blob = await file.getData(new window.zip.BlobWriter());
+                        const data = await this.readAsBinaryString(blob); // fixme: deprecated, but works for now
+
+                        // add to files to flash
+                        filesToFlash.push({
+                            "address": parseInt(address),
+                            "data": data,
+                        });
+
+                    }
+
+                    // init transport and esploader
+                    const transport = new window.Transport(serialPort, true);
+                    const esploader = new window.ESPLoader({
+                        transport: transport,
+                        baudrate: 921600,
+                        debugLogging: false,
+                        enableTracing: false,
+                        terminal: {
+                            clean() {
+
+                            },
+                            writeLine(data) {
+                                console.log(data);
+                            },
+                            write(data) {
+                                console.log(data);
+                            },
+                        },
+                    });
+
+                    // load device info
+                    await esploader.main();
+
+                    // flash device
+                    await esploader.writeFlash({
+                        fileArray: filesToFlash,
+                        flashSize: flashConfig.flash_size,
+                        flashMode: "DIO",
+                        flashFreq: "80MHz",
+                        eraseAll: false,
+                        compress: true,
+                        calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
+                        reportProgress: (fileIndex, written, total) => {
+                            const currentFilePercentage = (written / total) * 100;
+                            this.flashingProgress = Math.floor(currentFilePercentage);
+                        },
+                    });
+
+                    // reboot device
+                    await transport.setDTR(false);
+                    await new Promise((resolve) => setTimeout(resolve, 100));
+                    await transport.setDTR(true);
+
+                    // flashing successful
+                    alert("Firmware has been flashed!");
+
+                } catch(e) {
+                    alert("Firmware flashing failed: " + e);
+                    console.log(e);
+                } finally {
+                    this.isFlashing = false;
+                }
+
+                // close port
+                console.log("Closing serial port");
+                await serialPort.close();
 
             },
             async detect() {
@@ -848,6 +1050,21 @@
                 await rnode.close();
                 alert("TNC mode has been disabled!");
 
+            },
+            async readAsBinaryString(blob) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve(reader.result);
+                    };
+                    reader.readAsBinaryString(blob);
+                });
+            },
+        },
+        watch: {
+            selectedProduct() {
+                // reset selected model when changing selected product
+                this.selectedModel = null;
             },
         },
     }).mount('#app');

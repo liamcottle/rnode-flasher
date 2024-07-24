@@ -178,10 +178,6 @@ class Nrf52DfuFlasher {
         console.log("Sending firmware");
         await this.sendFirmware(firmware, progressCallback);
 
-        // close port
-        console.log("Closing serial port");
-        await this.serialPort.close();
-
         // todo
         // sleep(self.dfu_transport.get_activate_wait_time())
 
