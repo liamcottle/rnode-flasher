@@ -410,8 +410,12 @@
                 }
 
                 // enter dfu mode
+                console.log("entering dfu mode");
                 const flasher = new Nrf52DfuFlasher(serialPort);
                 await flasher.enterDfuMode();
+                console.log("entering dfu mode: done");
+
+                alert("Device should now be in DFU mode.");
 
             },
             async flash() {
