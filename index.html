@@ -47,7 +47,7 @@
 
             <div class="flex mb-1 space-x-1">
                 <div class="min-w-[70px] my-auto text-right">Product</div>
-                <select v-model="selectedProduct" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                <select v-model="selectedProduct" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
                     <option :value="null" disabled>Select a Product</option>
                     <option v-for="product of products" :value="product">{{ product.name }}</option>
                 </select>
@@ -55,7 +55,7 @@
 
             <div class="flex space-x-1">
                 <div class="min-w-[70px] my-auto text-right">Model</div>
-                <select v-model="selectedModel" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                <select v-model="selectedModel" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
                     <option :value="null" disabled>Select a Model</option>
                     <option v-if="selectedProduct" v-for="model of selectedProduct.models" :value="model">{{ model.name }}</option>
                 </select>
@@ -156,27 +156,27 @@
 
             <div class="flex mb-1 space-x-1">
                 <div class="min-w-[125px] my-auto text-right">Frequency (Hz)</div>
-                <input v-model="configFrequency" type="number" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2">
+                <input v-model="configFrequency" type="number" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2">
             </div>
             <div class="flex mb-1 space-x-1">
                 <div class="min-w-[125px] my-auto text-right">Bandwidth</div>
-                <select v-model="configBandwidth" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                <select v-model="configBandwidth" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
                     <option v-for="bandwidth in RNodeInterfaceDefaults.bandwidths" :value="bandwidth">{{ bandwidth / 1000 }} KHz</option>
                 </select>
             </div>
             <div class="flex mb-1 space-x-1">
                 <div class="min-w-[125px] my-auto text-right">Tx Power (dBm)</div>
-                <input v-model="configTxPower" type="number" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2">
+                <input v-model="configTxPower" type="number" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2">
             </div>
             <div class="flex mb-1 space-x-1">
                 <div class="min-w-[125px] my-auto text-right">Spreading Factor</div>
-                <select v-model="configSpreadingFactor" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                <select v-model="configSpreadingFactor" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
                     <option v-for="spreadingfactor in RNodeInterfaceDefaults.spreadingfactors" :value="spreadingfactor">{{ spreadingfactor }}</option>
                 </select>
             </div>
             <div class="flex mb-1 space-x-1">
                 <div class="min-w-[125px] my-auto text-right">Coding Rate</div>
-                <select v-model="configCodingRate" class="min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
+                <select v-model="configCodingRate" class="w-full sm:w-min sm:min-w-[250px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-2 pr-8">
                     <option v-for="codingrate in RNodeInterfaceDefaults.codingrates" :value="codingrate">{{ codingrate }}</option>
                 </select>
             </div>
