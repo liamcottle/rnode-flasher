@@ -106,6 +106,10 @@
             </div>
         </div>
 
+        <div v-if="selectedProduct && selectedModel && recommendedFirmwareFilename" class="border-t px-2 py-1">
+            <div class="text-sm">You should flash: {{ recommendedFirmwareFilename }}</div>
+        </div>
+
         <div class="border-t px-2 py-1">
             <div class="text-sm space-x-1">
                 <a target="_blank" href="https://github.com/markqvist/RNode_Firmware/releases" class="text-blue-500 hover:underline">Official Firmware</a>
@@ -264,6 +268,7 @@
                                 name: "868 MHz / 915 MHz / 923 MHz",
                             },
                         ],
+                        firmware_filename: "rnode_firmware_heltec32v2.zip",
                         flash_config: {
                             flash_size: "8MB",
                             flash_files: {
@@ -289,6 +294,7 @@
                                 name: "868 MHz / 915 MHz / 923 MHz",
                             },
                         ],
+                        firmware_filename: "rnode_firmware_heltec32v3.zip",
                         flash_config: {
                             flash_size: "8MB",
                             flash_files: {
@@ -313,6 +319,7 @@
                                 name: "868 MHz / 915 MHz / 923 MHz",
                             },
                         ],
+                        firmware_filename: "rnode_firmware_lora32v10.zip",
                         flash_config: {
                             flash_size: "4MB",
                             flash_files: {
@@ -338,6 +345,7 @@
                                 name: "868 MHz / 915 MHz / 923 MHz",
                             },
                         ],
+                        firmware_filename: "rnode_firmware_lora32v20.zip",
                         flash_config: {
                             flash_size: "4MB",
                             flash_files: {
@@ -357,6 +365,7 @@
                             {
                                 id: ROM.MODEL_B4,
                                 name: "433 MHz",
+                                firmware_filename: "rnode_firmware_lora32v21.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -371,6 +380,7 @@
                             {
                                 id: ROM.MODEL_B9,
                                 name: "868/915/923 MHz",
+                                firmware_filename: "rnode_firmware_lora32v21.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -390,6 +400,7 @@
                                 id: ROM.MODEL_B4_TCXO,
                                 mapped_id: ROM.MODEL_B4, // this device uses the same model code, but different firmware file
                                 name: "433 MHz, with TCXO",
+                                firmware_filename: "rnode_firmware_lora32v21_tcxo.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -405,6 +416,7 @@
                                 id: ROM.MODEL_B9_TCXO,
                                 mapped_id: ROM.MODEL_B9, // this device uses the same model code, but different firmware file
                                 name: "868/915/923 MHz, with TCXO",
+                                firmware_filename: "rnode_firmware_lora32v21_tcxo.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -426,32 +438,23 @@
                             {
                                 id: ROM.MODEL_A1,
                                 name: "410 - 525 MHz (with SX1268 chip)",
-                                flash_config: {
-                                    flash_size: "4MB",
-                                    flash_files: {
-                                        "0xe000": "rnode_firmware_t3s3.boot_app0",
-                                        "0x0": "rnode_firmware_t3s3.bootloader",
-                                        "0x10000": "rnode_firmware_t3s3.bin",
-                                        "0x210000": "console_image.bin",
-                                        "0x8000": "rnode_firmware_t3s3.partitions",
-                                    },
-                                },
                             },
                             {
                                 id: ROM.MODEL_A6,
                                 name: "820 - 1020 MHz (with SX1262 chip)",
-                                flash_config: {
-                                    flash_size: "4MB",
-                                    flash_files: {
-                                        "0xe000": "rnode_firmware_t3s3.boot_app0",
-                                        "0x0": "rnode_firmware_t3s3.bootloader",
-                                        "0x10000": "rnode_firmware_t3s3.bin",
-                                        "0x210000": "console_image.bin",
-                                        "0x8000": "rnode_firmware_t3s3.partitions",
-                                    },
-                                },
                             },
                         ],
+                        firmware_filename: "rnode_firmware_t3s3.zip",
+                        flash_config: {
+                            flash_size: "4MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_t3s3.boot_app0",
+                                "0x0": "rnode_firmware_t3s3.bootloader",
+                                "0x10000": "rnode_firmware_t3s3.bin",
+                                "0x210000": "console_image.bin",
+                                "0x8000": "rnode_firmware_t3s3.partitions",
+                            },
+                        },
                     },
                     {
                         name: "LilyGO T-Beam",
@@ -461,6 +464,7 @@
                             {
                                 id: ROM.MODEL_E4,
                                 name: "433 MHz (with SX1278 chip)",
+                                firmware_filename: "rnode_firmware_tbeam.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -475,6 +479,7 @@
                             {
                                 id: ROM.MODEL_E9,
                                 name: "868/915/923 MHz (with SX1276 chip)",
+                                firmware_filename: "rnode_firmware_tbeam.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -489,6 +494,7 @@
                             {
                                 id: ROM.MODEL_E3,
                                 name: "433 MHz (with SX1268 chip)",
+                                firmware_filename: "rnode_firmware_tbeam_sx1262.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -503,6 +509,7 @@
                             {
                                 id: ROM.MODEL_E8,
                                 name: "868/915/923 MHz (with SX1262 chip)",
+                                firmware_filename: "rnode_firmware_tbeam_sx1262.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -530,6 +537,7 @@
                                 name: "868 MHz / 915 MHz / 923 MHz",
                             },
                         ],
+                        firmware_filename: "rnode_firmware_rak4631.zip",
                     },
                     {
                         name: "RNode",
@@ -539,6 +547,7 @@
                             {
                                 id: ROM.MODEL_A2,
                                 name: "Handheld v2.1 RNode, 410 - 525 MHz",
+                                firmware_filename: "rnode_firmware_ng21.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -553,6 +562,7 @@
                             {
                                 id: ROM.MODEL_A7,
                                 name: "Handheld v2.1 RNode, 820 - 1020 MHz",
+                                firmware_filename: "rnode_firmware_ng21.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -567,6 +577,7 @@
                             {
                                 id: ROM.MODEL_A1,
                                 name: "Prototype v2.2 RNode, 410 - 525 MHz",
+                                firmware_filename: "rnode_firmware_t3s3.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -581,6 +592,7 @@
                             {
                                 id: ROM.MODEL_A6,
                                 name: "Prototype v2.2 RNode, 820 - 1020 MHz",
+                                firmware_filename: "rnode_firmware_t3s3.zip",
                                 flash_config: {
                                     flash_size: "4MB",
                                     flash_files: {
@@ -1314,6 +1326,11 @@
                     };
                     reader.readAsBinaryString(blob);
                 });
+            },
+        },
+        computed: {
+            recommendedFirmwareFilename() {
+                return this.selectedModel?.firmware_filename ?? this.selectedProduct?.firmware_filename;
             },
         },
         watch: {
