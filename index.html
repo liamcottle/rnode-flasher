@@ -504,30 +504,60 @@
                             {
                                 id: ROM.MODEL_A2,
                                 name: "Handheld v2.1 RNode, 410 - 525 MHz",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_ng21.boot_app0",
+                                        "0x1000": "rnode_firmware_ng21.bootloader",
+                                        "0x10000": "rnode_firmware_ng21.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_ng21.partitions",
+                                    },
+                                },
                             },
                             {
                                 id: ROM.MODEL_A7,
                                 name: "Handheld v2.1 RNode, 820 - 1020 MHz",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_ng21.boot_app0",
+                                        "0x1000": "rnode_firmware_ng21.bootloader",
+                                        "0x10000": "rnode_firmware_ng21.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_ng21.partitions",
+                                    },
+                                },
                             },
                             {
                                 id: ROM.MODEL_A1,
                                 name: "Prototype v2.2 RNode, 410 - 525 MHz",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3.partitions",
+                                    },
+                                },
                             },
                             {
                                 id: ROM.MODEL_A6,
                                 name: "Prototype v2.2 RNode, 820 - 1020 MHz",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3.partitions",
+                                    },
+                                },
                             },
                         ],
-                        flash_config: {
-                            flash_size: "4MB",
-                            flash_files: {
-                                "0xe000": "rnode_firmware_ng21.boot_app0",
-                                "0x1000": "rnode_firmware_ng21.bootloader",
-                                "0x10000": "rnode_firmware_ng21.bin",
-                                "0x210000": "console_image.bin",
-                                "0x8000": "rnode_firmware_ng21.partitions",
-                            },
-                        },
                     },
                 ],
 
