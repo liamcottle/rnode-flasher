@@ -402,6 +402,75 @@
                             },
                         },
                     },
+                    {
+                        name: "LilyGO LoRa32 v2.1",
+                        id: ROM.PRODUCT_T32_21,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_B4,
+                                name: "433 MHz",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_lora32v21.boot_app0",
+                                        "0x1000": "rnode_firmware_lora32v21.bootloader",
+                                        "0x10000": "rnode_firmware_lora32v21.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_lora32v21.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_B9,
+                                name: "868/915/923 MHz",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_lora32v21.boot_app0",
+                                        "0x1000": "rnode_firmware_lora32v21.bootloader",
+                                        "0x10000": "rnode_firmware_lora32v21.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_lora32v21.partitions",
+                                    },
+                                },
+                            },
+                            // The TCXO model codes are only used here to select the correct firmware,
+                            // actual model codes in firmware is still 0xB4 and 0xB9.
+                            // https://github.com/markqvist/Reticulum/blob/master/RNS/Utilities/rnodeconf.py#L156
+                            // https://github.com/markqvist/Reticulum/blob/master/RNS/Utilities/rnodeconf.py#L3283
+                            {
+                                id: ROM.MODEL_B4_TCXO,
+                                mapped_id: ROM.MODEL_B4, // this device uses the same model code, but different firmware file
+                                name: "433 MHz, with TCXO",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_lora32v21_tcxo.boot_app0",
+                                        "0x1000": "rnode_firmware_lora32v21_tcxo.bootloader",
+                                        "0x10000": "rnode_firmware_lora32v21_tcxo.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_lora32v21_tcxo.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_B9_TCXO,
+                                mapped_id: ROM.MODEL_B9, // this device uses the same model code, but different firmware file
+                                name: "868/915/923 MHz, with TCXO",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_lora32v21_tcxo.boot_app0",
+                                        "0x1000": "rnode_firmware_lora32v21_tcxo.bootloader",
+                                        "0x10000": "rnode_firmware_lora32v21_tcxo.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_lora32v21_tcxo.partitions",
+                                    },
+                                },
+                            },
+                        ],
+                    },
                 ],
 
                 // Liam's default config for New Zealand / LongFast on Slot 10
@@ -837,7 +906,8 @@
                 // determine device info
                 // todo implement ui to configure these values
                 const product = this.selectedProduct.id;
-                const model = this.selectedModel.id;
+                // use mapped_id if available, else fallback to id, some devices use the same model, but different firmware file
+                const model = this.selectedModel.mapped_id ?? this.selectedModel.id;
                 const hardwareRevision = 0x1;
                 const serialNumber = 1;
                 const timestampInSeconds = Math.floor(Date.now() / 1000);
