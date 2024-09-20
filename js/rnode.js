@@ -147,32 +147,48 @@ class RNode {
         }
     }
 
-    async readFromSerialPort() {
-        const reader = this.readable.getReader();
-        try {
-            let buffer = [];
-            while(true){
-                const { value, done } = await reader.read();
-                if(done){
-                    break;
-                }
-                if(value){
-                    for(let byte of value){
-                        buffer.push(byte);
-                        if(byte === this.KISS_FEND){
-                            if(buffer.length > 1){
-                                return this.handleKISSFrame(buffer);
+    async readFromSerialPort(timeoutMillis) {
+        return new Promise(async (resolve, reject) => {
+
+            // create reader
+            const reader = this.readable.getReader();
+
+            // timeout after provided millis
+            if(timeoutMillis != null){
+                setTimeout(() => {
+                    reader.releaseLock();
+                    reject("timeout");
+                }, timeoutMillis);
+            }
+
+            // attempt to read kiss frame
+            try {
+                let buffer = [];
+                while(true){
+                    const { value, done } = await reader.read();
+                    if(done){
+                        break;
+                    }
+                    if(value){
+                        for(let byte of value){
+                            buffer.push(byte);
+                            if(byte === this.KISS_FEND){
+                                if(buffer.length > 1){
+                                    resolve(this.handleKISSFrame(buffer));
+                                    return;
+                                }
+                                buffer = [this.KISS_FEND]; // Start new frame
                             }
-                            buffer = [this.KISS_FEND]; // Start new frame
                         }
                     }
                 }
+            } catch (error) {
+                console.error('Error reading from serial port: ', error);
+            } finally {
+                reader.releaseLock();
             }
-        } catch (error) {
-            console.error('Error reading from serial port: ', error);
-        } finally {
-            reader.releaseLock();
-        }
+
+        });
     }
 
     handleKISSFrame(frame) {
@@ -515,10 +531,36 @@ class RNode {
     }
 
     async startBluetoothPairing() {
+
+        // enable pairing
         await this.sendKissCommand([
             this.CMD_BT_CTRL,
             0x02, // enable pairing
         ]);
+
+        // attempt to get bluetooth pairing pin
+        try {
+
+            // read response from device
+            const [ command, ...pinBytes ] = await this.readFromSerialPort(5000);
+            if(command !== this.CMD_BT_PIN){
+                throw `unexpected command response: ${command}`;
+            }
+
+            // convert 4 bytes to 32bit integer
+            const pin = pinBytes[0] << 24 | pinBytes[1] << 16 | pinBytes[2] << 8 | pinBytes[3];
+
+            // todo: remove logs
+            console.log(pinBytes);
+            console.log(pin);
+
+            // todo: convert to string
+            return pin;
+
+        } catch(error) {
+            throw `failed to get bluetooth pin: ${error}`;
+        }
+
     }
 
     async setFrequency(frequencyInHz) {

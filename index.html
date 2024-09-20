@@ -200,6 +200,36 @@
     <div class="border bg-gray-50 rounded shadow">
 
         <div class="border-b px-2 py-1">
+            6. Configure Bluetooth (optional)
+        </div>
+
+        <div class="p-3">
+
+            <div class="space-x-1">
+                <button @click="enableBluetooth" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Enable
+                </button>
+                <button @click="disableBluetooth" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Disable
+                </button>
+                <button @click="startBluetoothPairing" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Start Pairing
+                </button>
+            </div>
+
+        </div>
+
+        <div class="border-t px-2 py-1">
+            <div class="text-sm space-x-1">
+                Bluetooth is not supported on all devices.
+            </div>
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
             Extra Tools
         </div>
 
@@ -1316,6 +1346,119 @@
                 await rnode.reset();
                 await rnode.close();
                 alert("TNC mode has been disabled!");
+
+            },
+            async enableBluetooth() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // enable bluetooth
+                console.log("enabling bluetooth");
+                await rnode.enableBluetooth();
+                console.log("enabling bluetooth: done");
+
+                await Utils.sleepMillis(1000);
+
+                // done
+                await rnode.close();
+                alert("Bluetooth has been enabled!");
+
+            },
+            async disableBluetooth() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // disable bluetooth
+                console.log("disabling bluetooth");
+                await rnode.disableBluetooth();
+                console.log("disabling bluetooth: done");
+
+                await Utils.sleepMillis(1000);
+
+                // done
+                await rnode.close();
+                alert("Bluetooth has been disabled!");
+
+            },
+            async startBluetoothPairing() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // start bluetooth pairing
+                try {
+                    console.log("start bluetooth pairing");
+                    const pin = await rnode.startBluetoothPairing();
+                    console.log("start bluetooth pairing: done");
+                    alert(`Bluetooth Pairing Pin: ${pin}`);
+                } catch(error) {
+                    alert(error);
+                }
+
+                // done
+                await rnode.close();
 
             },
             async readAsBinaryString(blob) {
