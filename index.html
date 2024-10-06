@@ -765,7 +765,12 @@
 
                 // close port
                 console.log("Closing serial port");
-                await this.serialPort.close();
+                try {
+                    await this.serialPort.close();
+                } catch(e) {
+                    console.log("failed to close serial port, ignoring...", e);
+                }
+
 
             },
             async flashEsp32() {
@@ -884,7 +889,11 @@
 
                 // close port
                 console.log("Closing serial port");
-                await serialPort.close();
+                try {
+                    await serialPort.close();
+                } catch(e) {
+                    console.log("failed to close serial port, ignoring...", e);
+                }
 
             },
             async detect() {

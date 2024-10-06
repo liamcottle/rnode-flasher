@@ -135,7 +135,11 @@ class RNode {
     }
 
     async close() {
-        await this.serialPort.close();
+        try {
+            await this.serialPort.close();
+        } catch(e) {
+            console.log("failed to close serial port, ignoring...", e);
+        }
     }
 
     async write(bytes) {
