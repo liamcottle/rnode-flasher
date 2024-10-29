@@ -26,11 +26,13 @@ There was an existing package called [pc-nrf-dfu-js](https://github.com/NordicSe
 
 ## How to use it?
 
-- Open [index.html](./index.html) in your web browser.
+- Open https://liamcottle.github.io/rnode-flasher/ in your web browser.
 - Select your device.
-- Put your device into DFU mode.
+- Put your device into DFU mode (for nRF52 boards)
 - Select a firmware file and click flash.
-- Your device should reboot into the new firmware.
+- Once flashed, your device should reboot into the new firmware.
+- For new devices that have never been provisioned, you should click "Provision" to configure the EEPROM.
+- Every time you flash new firmware, you should also click "Set Firmware Hash".
 
 > Note: At this time, firmware hashes for RNode are not configured. This is next on the todo list.
 
