@@ -554,6 +554,32 @@
                         ],
                     },
                     {
+                        name: "LilyGO T-Beam Supreme",
+                        id: ROM.PRODUCT_TBEAM_S_V1,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_DB,
+                                name: "433 MHz (with SX1268 chip)",
+                            },
+                            {
+                                id: ROM.MODEL_DC,
+                                name: "868/915/923 MHz (with SX1262 chip)",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_tbeam_supreme.zip",
+                        flash_config: {
+                            flash_size: "4MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_tbeam_supreme.boot_app0",
+                                "0x0": "rnode_firmware_tbeam_supreme.bootloader",
+                                "0x10000": "rnode_firmware_tbeam_supreme.bin",
+                                "0x210000": "console_image.bin",
+                                "0x8000": "rnode_firmware_tbeam_supreme.partitions",
+                            },
+                        },
+                    },
+                    {
                         name: "RAK4631",
                         id: ROM.PRODUCT_RAK4631,
                         platform: ROM.PLATFORM_NRF52,

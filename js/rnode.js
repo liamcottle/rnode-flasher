@@ -752,6 +752,10 @@ class ROM {
     static MODEL_E3       = 0xE3
     static MODEL_E8       = 0xE8
 
+    static PRODUCT_TBEAM_S_V1 = 0xEA;
+    static MODEL_DB           = 0xDB
+    static MODEL_DC           = 0xDC
+
     static PRODUCT_HMBRW  = 0xF0
     static MODEL_FF       = 0xFF
     static MODEL_FE       = 0xFE
