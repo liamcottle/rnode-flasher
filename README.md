@@ -34,14 +34,7 @@ There was an existing package called [pc-nrf-dfu-js](https://github.com/NordicSe
 - For new devices that have never been provisioned, you should click "Provision" to configure the EEPROM.
 - Every time you flash new firmware, you should also click "Set Firmware Hash".
 
-> Note: At this time, firmware hashes for RNode are not configured. This is next on the todo list.
-
-## Device Support
-
-The following list of devices are supported:
-
-- RAK4631
-- Heltec v3
+> Note: At this time, firmware hashes for RNode are not automatically configured.
 
 ## What is needed to set up a new RNode?
 
