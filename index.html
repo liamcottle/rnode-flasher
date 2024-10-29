@@ -580,6 +580,32 @@
                         },
                     },
                     {
+                        name: "LilyGO T-Deck",
+                        id: ROM.PRODUCT_TDECK,
+                        platform: ROM.PLATFORM_ESP32,
+                        models: [
+                            {
+                                id: ROM.MODEL_D4,
+                                name: "433 MHz (with SX1268 chip)",
+                            },
+                            {
+                                id: ROM.MODEL_D9,
+                                name: "868/915/923 MHz (with SX1262 chip)",
+                            },
+                        ],
+                        firmware_filename: "rnode_firmware_tdeck.zip",
+                        flash_config: {
+                            flash_size: "4MB",
+                            flash_files: {
+                                "0xe000": "rnode_firmware_tdeck.boot_app0",
+                                "0x0": "rnode_firmware_tdeck.bootloader",
+                                "0x10000": "rnode_firmware_tdeck.bin",
+                                "0x210000": "console_image.bin",
+                                "0x8000": "rnode_firmware_tdeck.partitions",
+                            },
+                        },
+                    },
+                    {
                         name: "RAK4631",
                         id: ROM.PRODUCT_RAK4631,
                         platform: ROM.PLATFORM_NRF52,

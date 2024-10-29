@@ -756,6 +756,10 @@ class ROM {
     static MODEL_DB           = 0xDB
     static MODEL_DC           = 0xDC
 
+    static PRODUCT_TDECK  = 0xD0;
+    static MODEL_D4       = 0xD4;
+    static MODEL_D9       = 0xD9;
+
     static PRODUCT_HMBRW  = 0xF0
     static MODEL_FF       = 0xFF
     static MODEL_FE       = 0xFE
