@@ -466,25 +466,66 @@
                         platform: ROM.PLATFORM_ESP32,
                         models: [
                             {
+                                id: ROM.MODEL_A5,
+                                name: "433 MHz (with SX1278 chip)",
+                                firmware_filename: "rnode_firmware_t3s3_sx127x.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3_sx127x.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3_sx127x.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3_sx127x.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3_sx127x.partitions",
+                                    },
+                                },
+                            },
+                            {
+                                id: ROM.MODEL_AA,
+                                name: "868/915/923 MHz (with SX1276 chip)",
+                                firmware_filename: "rnode_firmware_t3s3_sx127x.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3_sx127x.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3_sx127x.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3_sx127x.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3_sx127x.partitions",
+                                    },
+                                },
+                            },
+                            {
                                 id: ROM.MODEL_A1,
-                                name: "410 - 525 MHz (with SX1268 chip)",
+                                name: "433 MHz (with SX1268 chip)",
+                                firmware_filename: "rnode_firmware_t3s3.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3.partitions",
+                                    },
+                                },
                             },
                             {
                                 id: ROM.MODEL_A6,
-                                name: "820 - 1020 MHz (with SX1262 chip)",
+                                name: "868/915/923 MHz (with SX1262 chip)",
+                                firmware_filename: "rnode_firmware_t3s3.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3.partitions",
+                                    },
+                                },
                             },
                         ],
-                        firmware_filename: "rnode_firmware_t3s3.zip",
-                        flash_config: {
-                            flash_size: "4MB",
-                            flash_files: {
-                                "0xe000": "rnode_firmware_t3s3.boot_app0",
-                                "0x0": "rnode_firmware_t3s3.bootloader",
-                                "0x10000": "rnode_firmware_t3s3.bin",
-                                "0x210000": "console_image.bin",
-                                "0x8000": "rnode_firmware_t3s3.partitions",
-                            },
-                        },
                     },
                     {
                         name: "LilyGO T-Beam",
