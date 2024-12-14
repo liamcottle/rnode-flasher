@@ -200,7 +200,42 @@
     <div class="border bg-gray-50 rounded shadow">
 
         <div class="border-b px-2 py-1">
-            6. Configure Bluetooth (optional)
+            6. Flash Bootstrap Console Image (.bin) (optional)
+        </div>
+
+        <div class="p-3">
+
+            <div class="mb-2">
+                <input ref="bootstrapFile" type="file"/>
+            </div>
+
+            <div v-if="!isFlashingBootstrapImage" class="space-x-1">
+                <button @click="flashBootstrapConsoleImage" :disabled="isFlashing" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Flash Now
+                </button>
+            </div>
+
+            <div v-else>
+                <span v-if="flashingBootstrapImageProgress > 0">Flashing: {{flashingBootstrapImageProgress}}%</span>
+                <span v-else>Flashing: please wait...</span>
+                <div class="mt-1 w-[200px] overflow-hidden rounded-full bg-gray-200">
+                    <div class="h-2 rounded-full bg-blue-600" :style="{ 'width': `${flashingBootstrapImageProgress}%`}"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t px-2 py-1">
+            <div class="text-sm space-x-1">
+                <a target="_blank" href="https://github.com/markqvist/RNode_Firmware/releases" class="text-blue-500 hover:underline">console_image.bin</a>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            7. Configure Bluetooth (optional)
         </div>
 
         <div class="p-3">
@@ -280,6 +315,8 @@
 
                 isFlashing: false,
                 flashingProgress: 0,
+                isFlashingBootstrapImage: false,
+                flashingBootstrapImageProgress: 0,
 
                 selectedProduct: null,
                 selectedModel: null,
@@ -1587,6 +1624,111 @@
                     };
                     reader.readAsBinaryString(blob);
                 });
+            },
+            async flashBootstrapConsoleImage() {
+                // ensure ESPLoader is available
+                if (!window.ESPLoader) {
+                    alert("esptool-js could not be loaded.");
+                    return;
+                }
+
+                // ensure bootstrap file selected
+                const bootstrapFile = this.$refs["bootstrapFile"].files[0];
+                if (!bootstrapFile) {
+                    alert("Select a bootstrap console file first");
+                    return;
+                }
+
+                // Check device selection state
+                if (!this.selectedProduct) {
+                    alert("Please select a device first");
+                    return;
+                }
+
+                // Check if ESP32 device
+                if (this.selectedProduct.platform !== ROM.PLATFORM_ESP32) {
+                    alert("Bootstrap console flashing is only supported on ESP32 devices");
+                    return;
+                }   
+
+                // Check console image filename
+                if (!bootstrapFile.name.endsWith('.bin')) {
+                    alert("Please select the correct bootstrap console image file named 'console_image.bin'");
+                    return;
+                }
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if (!serialPort) {
+                    return;
+                }
+
+                // update progress
+                this.isFlashingBootstrapImage = true;
+                this.flashingBootstrapImageProgress = 0;
+
+                try {
+                    // read file data as binary string
+                    const data = await this.readAsBinaryString(bootstrapFile);
+
+                    // init transport and esploader
+                    const transport = new window.Transport(serialPort, true);
+                    const esploader = new window.ESPLoader({
+                        transport: transport,
+                        baudrate: 921600,
+                        debugLogging: false,
+                        enableTracing: false,
+                        terminal: {
+                            clean() {},
+                            writeLine(data) {
+                                console.log(data);
+                            },
+                            write(data) {
+                                console.log(data);
+                            },
+                        },
+                    });
+
+                    // load device info
+                    await esploader.main();
+
+                    // flash console_image.bin
+                    await esploader.writeFlash({
+                        fileArray: [{ address: 0x210000, data: data }],
+                        flashSize: "4MB",
+                        flashMode: "DIO",
+                        flashFreq: "80MHz",
+                        eraseAll: false,
+                        compress: true,
+                        calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
+                        reportProgress: (fileIndex, written, total) => {
+                            const currentFilePercentage = (written / total) * 100;
+                            this.flashingBootstrapImageProgress = Math.floor(currentFilePercentage);
+                        },
+                    });
+
+                    // reboot device
+                    await transport.setDTR(false);
+                    await new Promise((resolve) => setTimeout(resolve, 100));
+                    await transport.setDTR(true);
+
+                    // flashing successful
+                    alert("Bootstrap console image has been flashed!");
+
+                } catch (e) {
+                    alert("Flashing bootstrap console image failed: " + e);
+                    console.log(e);
+                } finally {
+                    this.isFlashingBootstrapImage = false;
+                }
+
+                // close port
+                console.log("Closing serial port");
+                try {
+                    await serialPort.close();
+                } catch (e) {
+                    console.log("failed to close serial port, ignoring...", e);
+                }
             },
         },
         computed: {
