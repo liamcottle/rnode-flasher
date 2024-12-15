@@ -242,6 +242,9 @@
                 <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     Reboot RNode
                 </button>
+                <button @click="readDisplay" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Read Display
+                </button>
                 <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     Dump EEPROM
                 </button>
@@ -251,6 +254,11 @@
             </div>
 
             <div class="text-sm text-gray-500">EEPROM dumps are shown in dev tools console.</div>
+
+            <!-- show rnode display if available -->
+            <div v-if="rnodeDisplayImage">
+                <img :src="rnodeDisplayImage" class="h-28"/>
+            </div>
 
         </div>
 
@@ -280,6 +288,8 @@
 
                 isFlashing: false,
                 flashingProgress: 0,
+
+                rnodeDisplayImage: null,
 
                 selectedProduct: null,
                 selectedModel: null,
@@ -1080,6 +1090,96 @@
 
                 // done
                 alert("Board is rebooting!");
+
+            },
+            frameBufferToCanvas(framebuffer, width, height, backgroundColour, foregroundColour) {
+
+                // create canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+
+                // fill the canvas with background colour
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = backgroundColour;
+                ctx.fillRect(0, 0, width, height);
+
+                // draw foreground pixels where bits are 1
+                ctx.fillStyle = foregroundColour;
+                for(let y = 0; y < height; y++){
+                    for(let x = 0; x < width; x++){
+                        const byteIndex = Math.floor((y * width + x) / 8);
+                        const bitIndex = x % 8;
+                        const bit = (framebuffer[byteIndex] >> (7 - bitIndex)) & 1;
+                        if(bit){
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                }
+
+                return canvas;
+
+            },
+            rnodeDisplayBufferToPng(displayBuffer) {
+
+                // get display area and stat area
+                const displayArea = displayBuffer.slice(0, 512);
+                const statArea = displayBuffer.slice(512, 1024);
+
+                // create canvas from frame buffers
+                const displayCanvasOriginal = this.frameBufferToCanvas(displayArea, 64, 64, "#000000", "#FFFFFF");
+                const statCanvasOriginal = this.frameBufferToCanvas(statArea, 64, 64, "#000000", "#FFFFFF");
+
+                // create horizontal canvas to show display area and stat area next to each other
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 64;
+
+                // draw canvases to final canvas
+                const canvasCtx = canvas.getContext('2d');
+                canvasCtx.imageSmoothingEnabled = false;
+                canvasCtx.drawImage(displayCanvasOriginal, 0, 0, 64, 64);
+                canvasCtx.drawImage(statCanvasOriginal, 64, 0, 64, 64);
+
+                // create scaled canvas
+                const scaleFactor = 4;
+                const scaledCanvas = document.createElement('canvas');
+                scaledCanvas.width = canvas.width * scaleFactor;
+                scaledCanvas.height = canvas.height * scaleFactor;
+
+                // scale original canvas onto new canvas
+                const scaledCtx = scaledCanvas.getContext('2d');
+                scaledCtx.imageSmoothingEnabled = false;
+                scaledCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+
+                // convert canvas to png
+                return scaledCanvas.toDataURL("image/png");
+
+            },
+            async readDisplay() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return;
+                }
+
+                // check if device is an rnode
+                const rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await rnode.detect();
+                if(!isRNode){
+                    alert("Selected device is not an RNode!");
+                    return;
+                }
+
+                // read display
+                const displayBuffer = await rnode.readDisplay();
+
+                // disconnect from rnode
+                await rnode.close();
+
+                // update ui
+                this.rnodeDisplayImage = this.rnodeDisplayBufferToPng(displayBuffer);
 
             },
             async dumpEeprom() {

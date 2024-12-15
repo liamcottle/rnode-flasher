@@ -83,6 +83,8 @@ class RNode {
     CMD_BT_CTRL = 0x46;
     CMD_BT_PIN = 0x62;
 
+    CMD_DISP_READ = 0x66;
+
     CMD_DETECT = 0x08;
     DETECT_REQ = 0x73;
     DETECT_RESP = 0x46;
@@ -564,6 +566,20 @@ class RNode {
         } catch(error) {
             throw `failed to get bluetooth pin: ${error}`;
         }
+
+    }
+
+    async readDisplay() {
+
+        await this.sendKissCommand([
+            this.CMD_DISP_READ,
+            0x01,
+        ]);
+
+        // read response from device
+        const [ command, ...displayBuffer ] = await this.readFromSerialPort();
+
+        return displayBuffer;
 
     }
 
