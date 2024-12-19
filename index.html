@@ -1750,10 +1750,11 @@
                     console.log("start bluetooth pairing");
                     const pin = await rnode.startBluetoothPairing();
                     console.log("start bluetooth pairing: done");
-                    alert(`Bluetooth Pairing Pin: ${pin}`);
                 } catch(error) {
                     alert(error);
                 }
+
+                alert("RNode should now be in Bluetooth Pairing mode. A pin will be shown on the screen when you pair with it from Android bluetooth settings.");
 
                 // done
                 await rnode.close();
