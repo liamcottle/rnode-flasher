@@ -106,12 +106,11 @@
             </div>
         </div>
 
-        <div v-if="selectedProduct && selectedModel && recommendedFirmwareFilename" class="border-t px-2 py-1">
-            <div class="text-sm">You should flash: {{ recommendedFirmwareFilename }}</div>
-        </div>
-
         <div class="border-t px-2 py-1 text-sm">
-            <div>Download Firmware</div>
+            <div>
+                <span>Download Firmware</span>
+                <span v-if="selectedProduct && selectedModel && recommendedFirmwareFilename">: {{ recommendedFirmwareFilename }}</span>
+            </div>
             <div class="space-x-1">
                 <a target="_blank" href="https://github.com/markqvist/RNode_Firmware/releases" class="text-blue-500 hover:underline">Official Firmware</a>
                 <span>•</span>
