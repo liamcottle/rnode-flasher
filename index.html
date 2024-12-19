@@ -178,7 +178,62 @@
     <div class="border bg-gray-50 rounded shadow">
 
         <div class="border-b px-2 py-1">
-            5. Configure TNC Mode (optional)
+            5. Done
+        </div>
+
+        <div class="px-2 py-1">
+            If you made it this far, and all previous steps were successful, your RNode should be ready to use with <a target="_blank" href="https://github.com/liamcottle/reticulum-meshchat" class="text-blue-500 hover:underline">MeshChat</a> or <a target="_blank" href="https://github.com/markqvist/Sideband/" class="text-blue-500 hover:underline">Sideband</a>.
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Advanced Tools
+        </div>
+
+        <div class="p-3">
+
+            <div class="space-x-1">
+                <button @click="detect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Detect RNode
+                </button>
+                <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Reboot RNode
+                </button>
+                <button @click="readDisplay" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Read Display
+                </button>
+                <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Dump EEPROM
+                </button>
+                <button @click="wipeEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
+                    Wipe EEPROM
+                </button>
+            </div>
+
+            <div class="text-sm text-gray-500">EEPROM dumps are shown in dev tools console.</div>
+
+            <!-- show rnode display if available -->
+            <div v-if="rnodeDisplayImage">
+                <img :src="rnodeDisplayImage" class="h-28"/>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Configure TNC Mode (optional)
+        </div>
+
+        <div class="border-b px-2 py-1 text-sm">
+            <div>• TNC mode allows an RNode to be used as a KISS compatible TNC over the Serial Port.</div>
+            <div>• This mode makes it usable with amateur radio software that can talk to a KISS TNC over a serial port.</div>
+            <div>• You must leave TNC mode disabled when using RNode with apps like MeshChat or Sideband.</div>
         </div>
 
         <div class="p-3">
@@ -225,7 +280,7 @@
     <div class="border bg-gray-50 rounded shadow">
 
         <div class="border-b px-2 py-1">
-            6. Configure Bluetooth (optional)
+            Configure Bluetooth (optional)
         </div>
 
         <div class="p-3">
@@ -248,43 +303,6 @@
             <div class="text-sm space-x-1">
                 Bluetooth is not supported on all devices. <span class="text-red-500">Pairing is untested and may not work!</span>
             </div>
-        </div>
-
-    </div>
-
-    <div class="border bg-gray-50 rounded shadow">
-
-        <div class="border-b px-2 py-1">
-            Extra Tools
-        </div>
-
-        <div class="p-3">
-
-            <div class="space-x-1">
-                <button @click="detect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Detect RNode
-                </button>
-                <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Reboot RNode
-                </button>
-                <button @click="readDisplay" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Read Display
-                </button>
-                <button @click="dumpEeprom" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                    Dump EEPROM
-                </button>
-                <button @click="wipeEeprom" class="border border-gray-500 px-2 bg-red-100 hover:bg-red-200 rounded">
-                    Wipe EEPROM
-                </button>
-            </div>
-
-            <div class="text-sm text-gray-500">EEPROM dumps are shown in dev tools console.</div>
-
-            <!-- show rnode display if available -->
-            <div v-if="rnodeDisplayImage">
-                <img :src="rnodeDisplayImage" class="h-28"/>
-            </div>
-
         </div>
 
     </div>
