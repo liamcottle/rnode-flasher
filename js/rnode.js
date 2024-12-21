@@ -766,6 +766,10 @@ class ROM {
     static MODEL_C5       = 0xC5
     static MODEL_CA       = 0xCA
 
+    static PRODUCT_HELTEC_T114 = 0xC2
+    static MODEL_C6       = 0xC6
+    static MODEL_C7       = 0xC7
+
     static PRODUCT_TBEAM  = 0xE0
     static MODEL_E4       = 0xE4
     static MODEL_E9       = 0xE9
