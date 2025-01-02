@@ -110,7 +110,7 @@
         <div class="border-t px-2 py-1 text-sm">
             <div>
                 <span>Download Firmware</span>
-                <span v-if="selectedProduct && selectedModel && recommendedFirmwareFilename">: {{ recommendedFirmwareFilename }}</span>
+                <span v-if="selectedProduct && selectedModel && recommendedFirmwareFilename">: <a target="_blank" :href="`https://github.com/markqvist/RNode_Firmware/releases/latest/download/${recommendedFirmwareFilename}`" class="text-blue-500 hover:underline">{{ recommendedFirmwareFilename }}</a></span>
             </div>
             <div class="space-x-1">
                 <a target="_blank" href="https://github.com/markqvist/RNode_Firmware/releases" class="text-blue-500 hover:underline">Official Firmware</a>
