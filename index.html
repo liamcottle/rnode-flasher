@@ -1635,11 +1635,11 @@
                 await rnode.enableBluetooth();
                 console.log("enabling bluetooth: done");
 
-                await Utils.sleepMillis(1000);
+                alert("Bluetooth has been enabled!");
 
                 // done
+                await Utils.sleepMillis(1000);
                 await rnode.close();
-                alert("Bluetooth has been enabled!");
 
             },
             async disableBluetooth() {
@@ -1663,12 +1663,11 @@
                 console.log("disabling bluetooth");
                 await rnode.disableBluetooth();
                 console.log("disabling bluetooth: done");
-
-                await Utils.sleepMillis(1000);
+                alert("Bluetooth has been disabled!");
 
                 // done
+                await Utils.sleepMillis(1000);
                 await rnode.close();
-                alert("Bluetooth has been disabled!");
 
             },
             async startBluetoothPairing() {
@@ -1700,7 +1699,14 @@
                     alert(error);
                 }
 
-                alert("RNode is in pairing mode. Close this alert and then pair from Android bluetooth settings. A pin will be shown on screen.");
+                // tell user device is in pairing mode, and how to pair
+                alert([
+                    "- RNode is in Bluetooth Pairing Mode for 30 seconds.",
+                    "- Close this alert before performing the next steps.",
+                    "- Open bluetooth settings on your Android device.",
+                    "- Click pair on the RNode device that shows up.",
+                    "- Bluetooth pin will shown on your RNode screen and on this page.",
+                ].join("\n"));
 
             },
             async readAsBinaryString(blob) {
