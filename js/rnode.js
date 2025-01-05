@@ -144,14 +144,14 @@ class RNode {
         try {
             this.reader.releaseLock();
         } catch(e) {
-            console.log("failed to release lock on serial port readable, ignoring...", e);
+            //console.log("failed to release lock on serial port readable, ignoring...", e);
         }
 
         // close serial port
         try {
             await this.serialPort.close();
         } catch(e) {
-            console.log("failed to close serial port, ignoring...", e);
+            //console.log("failed to close serial port, ignoring...", e);
         }
 
     }
