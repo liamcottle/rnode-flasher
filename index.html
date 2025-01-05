@@ -334,6 +334,8 @@
         data() {
             return {
 
+                rnode: null,
+
                 isFlashing: false,
                 flashingProgress: 0,
 
@@ -874,10 +876,36 @@
                     return null;
                 }
 
+                // close any existing rnode connection
+                if(this.rnode){
+                    await this.rnode.close();
+                    this.rnode = null;
+                }
+
                 // ask user to select device
                 return await navigator.serial.requestPort({
                     filters: [],
                 });
+
+            },
+            async askForRNode() {
+
+                // ask for serial port
+                const serialPort = await this.askForSerialPort();
+                if(!serialPort){
+                    return false;
+                }
+
+                // check if device is an rnode
+                this.rnode = await RNode.fromSerialPort(serialPort);
+                const isRNode = await this.rnode.detect();
+                if(!isRNode){
+                    await this.rnode.close();
+                    alert("Selected device is not an RNode!");
+                    return false;
+                }
+
+                return this.rnode;
 
             },
             async enterDfuMode() {
@@ -1085,17 +1113,9 @@
             },
             async detect() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1138,17 +1158,9 @@
             },
             async reboot() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1226,17 +1238,9 @@
             },
             async readDisplay() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1252,17 +1256,9 @@
             },
             async dumpEeprom() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1280,22 +1276,15 @@
             },
             async wipeEeprom() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
                 // ask user to confirm
                 if(!confirm("Are you sure you want to wipe the eeprom on this device? This will take about 30 seconds. An alert will show when the eeprom wipe has finished.")){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                    await rnode.close();
                     return;
                 }
 
@@ -1314,18 +1303,9 @@
             },
             async provision() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
-                    await rnode.close();
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1505,17 +1485,9 @@
             },
             async setFirmwareHash() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1562,17 +1534,9 @@
             },
             async enableTncMode() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1618,17 +1582,9 @@
             },
             async disableTncMode() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1659,17 +1615,9 @@
             },
             async enableBluetooth() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1696,17 +1644,9 @@
             },
             async disableBluetooth() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
@@ -1733,17 +1673,9 @@
             },
             async startBluetoothPairing() {
 
-                // ask for serial port
-                const serialPort = await this.askForSerialPort();
-                if(!serialPort){
-                    return;
-                }
-
-                // check if device is an rnode
-                const rnode = await RNode.fromSerialPort(serialPort);
-                const isRNode = await rnode.detect();
-                if(!isRNode){
-                    alert("Selected device is not an RNode!");
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
                     return;
                 }
 
