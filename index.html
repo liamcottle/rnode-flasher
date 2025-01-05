@@ -1759,16 +1759,16 @@
                 // start bluetooth pairing
                 try {
                     console.log("start bluetooth pairing");
-                    const pin = await rnode.startBluetoothPairing();
+                    await rnode.startBluetoothPairing(async (pin) => {
+                        alert("Bluetooth Pairing Pin: " + pin);
+                        await rnode.close();
+                    });
                     console.log("start bluetooth pairing: done");
                 } catch(error) {
                     alert(error);
                 }
 
-                alert("RNode should now be in Bluetooth Pairing mode. A pin will be shown on the screen when you pair with it from Android bluetooth settings.");
-
-                // done
-                await rnode.close();
+                alert("RNode is in pairing mode. Close this alert and then pair from Android bluetooth settings. A pin will be shown on screen.");
 
             },
             async readAsBinaryString(blob) {
