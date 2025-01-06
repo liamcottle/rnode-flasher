@@ -312,6 +312,36 @@
 
     </div>
 
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="border-b px-2 py-1">
+            Configure Display (optional)
+        </div>
+
+        <div class="p-3">
+            <div class="flex space-x-1">
+                <div class="my-auto">Rotation</div>
+                <button @click="setDisplayRotation(0)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    0
+                </button>
+                <button @click="setDisplayRotation(1)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    1
+                </button>
+                <button @click="setDisplayRotation(2)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    2
+                </button>
+                <button @click="setDisplayRotation(3)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    3
+                </button>
+            </div>
+        </div>
+
+        <div class="border-t px-2 py-1 text-sm">
+            <div>Setting display rotation requires firmware v1.80+</div>
+        </div>
+
+    </div>
+
 </div>
 
 <!-- setup web-serial-polyfill -->
@@ -1707,6 +1737,32 @@
                     "- Click pair on the RNode device that shows up.",
                     "- Bluetooth pin will shown on your RNode screen and on this page.",
                 ].join("\n"));
+
+            },
+            async setDisplayRotation(rotation) {
+
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // configure
+                console.log("setting display rotation");
+                await rnode.setDisplayRotation(rotation);
+                console.log("setting display rotation: done");
+
+                // done
+                await rnode.close();
 
             },
             async readAsBinaryString(blob) {

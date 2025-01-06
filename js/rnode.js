@@ -79,6 +79,7 @@ class RNode {
     ROM_UNLOCK_BYTE = 0xF8;
     CMD_HASHES = 0x60;
     CMD_FW_UPD = 0x61;
+    CMD_DISP_ROT = 0x67;
 
     CMD_BT_CTRL = 0x46;
     CMD_BT_PIN = 0x62;
@@ -748,6 +749,13 @@ class RNode {
     async getRomAsObject() {
         const rom = await this.getRom();
         return new ROM(rom);
+    }
+
+    async setDisplayRotation(rotation) {
+        await this.sendKissCommand([
+            this.CMD_DISP_ROT,
+            rotation & 0xFF,
+        ]);
     }
 
 }
