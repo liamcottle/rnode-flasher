@@ -80,6 +80,7 @@ class RNode {
     CMD_HASHES = 0x60;
     CMD_FW_UPD = 0x61;
     CMD_DISP_ROT = 0x67;
+    CMD_DISP_RCND = 0x68;
 
     CMD_BT_CTRL = 0x46;
     CMD_BT_PIN = 0x62;
@@ -755,6 +756,13 @@ class RNode {
         await this.sendKissCommand([
             this.CMD_DISP_ROT,
             rotation & 0xFF,
+        ]);
+    }
+
+    async startDisplayReconditioning() {
+        await this.sendKissCommand([
+            this.CMD_DISP_RCND,
+            0x01,
         ]);
     }
 

@@ -318,7 +318,8 @@
             Configure Display (optional)
         </div>
 
-        <div class="p-3">
+        <div class="p-3 space-y-2">
+
             <div class="flex space-x-1">
                 <div class="my-auto">Rotation</div>
                 <button @click="setDisplayRotation(0)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
@@ -334,6 +335,17 @@
                     3
                 </button>
             </div>
+
+            <div class="flex space-x-1">
+                <div class="my-auto">Reconditioning</div>
+                <button @click="startDisplayReconditioning" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Start
+                </button>
+                <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Stop
+                </button>
+            </div>
+
         </div>
 
         <div class="border-t px-2 py-1 text-sm">
@@ -1760,6 +1772,32 @@
                 console.log("setting display rotation");
                 await rnode.setDisplayRotation(rotation);
                 console.log("setting display rotation: done");
+
+                // done
+                await rnode.close();
+
+            },
+            async startDisplayReconditioning() {
+
+                // ask for rnode
+                const rnode = await this.askForRNode();
+                if(!rnode){
+                    return;
+                }
+
+                // check if device has been provisioned
+                const rom = await rnode.getRomAsObject();
+                const details = rom.parse();
+                if(!details || !details.is_provisioned){
+                    alert("Eeprom is not provisioned. You must do this first!");
+                    await rnode.close();
+                    return;
+                }
+
+                // configure
+                console.log("starting display reconditioning");
+                await rnode.startDisplayReconditioning();
+                console.log("starting display reconditioning: done");
 
                 // done
                 await rnode.close();
