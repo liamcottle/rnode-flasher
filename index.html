@@ -647,6 +647,21 @@
                                     },
                                 },
                             },
+                            {
+                                id: ROM.MODEL_AC,
+                                name: "2.4 GHz (with SX1280 chip)",
+                                firmware_filename: "rnode_firmware_t3s3_sx1280_pa.zip",
+                                flash_config: {
+                                    flash_size: "4MB",
+                                    flash_files: {
+                                        "0xe000": "rnode_firmware_t3s3_sx1280_pa.boot_app0",
+                                        "0x0": "rnode_firmware_t3s3_sx1280_pa.bootloader",
+                                        "0x10000": "rnode_firmware_t3s3_sx1280_pa.bin",
+                                        "0x210000": "console_image.bin",
+                                        "0x8000": "rnode_firmware_t3s3_sx1280_pa.partitions",
+                                    },
+                                },
+                            },
                         ],
                     },
                     {

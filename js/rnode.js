@@ -794,6 +794,7 @@ class ROM {
     static MODEL_A7       = 0xA7
     static MODEL_A5       = 0xA5;
     static MODEL_AA       = 0xAA;
+    static MODEL_AC       = 0xAC;
 
     static PRODUCT_T32_10 = 0xB2
     static MODEL_BA       = 0xBA
