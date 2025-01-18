@@ -837,8 +837,8 @@ class ROM {
     static MODEL_D9       = 0xD9;
 
     static PRODUCT_TECHO  = 0x15;
-    static MODEL_T4       = 0x16;
-    static MODEL_T9       = 0x17;
+    static MODEL_16       = 0x16;
+    static MODEL_17       = 0x17;
 
     static PRODUCT_HMBRW  = 0xF0
     static MODEL_FF       = 0xFF
