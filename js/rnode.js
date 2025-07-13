@@ -117,6 +117,7 @@ class RNode {
     BOARD_LORA32_V2_0 = 0x36;
     BOARD_LORA32_V2_1 = 0x37;
     BOARD_RAK4631 = 0x51;
+    BOARD_XIAO_ESP32S3 = 0x3E
 
     HASH_TYPE_TARGET_FIRMWARE = 0x01;
     HASH_TYPE_FIRMWARE = 0x02;
@@ -844,6 +845,9 @@ class ROM {
     static MODEL_FF       = 0xFF
     static MODEL_FE       = 0xFE
 
+    static PRODUCT_XIAO_ESP32S3 = 0xEB
+    static MODEL_DD             = 0xDD
+
     static ADDR_PRODUCT   = 0x00
     static ADDR_MODEL     = 0x01
     static ADDR_HW_REV    = 0x02
@@ -870,6 +874,7 @@ class ROM {
     static BOARD_LORA32_V2_0   = 0x36
     static BOARD_LORA32_V2_1   = 0x37
     static BOARD_RAK4631       = 0x51
+    static BOARD_XIAO_ESP32S3  = 0x3E
 
     static MANUAL_FLASH_MODELS = [ROM.MODEL_A1, ROM.MODEL_A6]
 
